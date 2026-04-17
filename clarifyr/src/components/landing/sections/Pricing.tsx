@@ -7,11 +7,13 @@ import { fadeUp, staggerContainer, staggerItem, viewport } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 import SectionHeading from '@/components/landing/SectionHeading'
 import type { CTAProps } from '@/types/landing'
+import AmbientBackground from '@/components/landing/AmbientBackground'
 
 export default function Pricing({ onCTAClick }: CTAProps) {
   return (
-    <section id="pricing" className="bg-white section-pad">
-      <div className="max-w-container mx-auto px-4 sm:px-6">
+    <section id="pricing" className="relative bg-white section-pad overflow-hidden">
+      <AmbientBackground preset="section" />
+      <div className="relative z-10 max-w-container mx-auto px-4 sm:px-6">
         <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={viewport}>
           <SectionHeading
             eyebrow="PRICING"
@@ -36,7 +38,7 @@ export default function Pricing({ onCTAClick }: CTAProps) {
                 'relative rounded-xl p-7 flex flex-col',
                 plan.highlight
                   ? 'border-2 border-brand shadow-orange'
-                  : 'border border-zinc-200 shadow-card',
+                  : 'border border-zinc-200/70',
               )}
             >
               {plan.badge && (

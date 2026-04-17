@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
+import Link from 'next/link'
 import { NAV_LINKS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import type { NavbarProps } from '@/types/landing'
@@ -27,11 +28,9 @@ export default function Navbar({ onCTAClick }: NavbarProps) {
       )}
     >
       <div className="max-w-container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <a href="/">
-          <span className="text-xl font-bold tracking-tight text-zinc-950">
-            Clarif<span className="text-brand">yr</span>
-          </span>
-        </a>
+        <Link href="/" className="text-xl font-bold tracking-tight text-zinc-950">
+          Clarif<span className="text-brand">yr</span>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-1">
           {NAV_LINKS.map(link => (

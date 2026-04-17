@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, viewport } from '@/lib/motion'
 import type { CTAProps } from '@/types/landing'
+import AmbientBackground from '@/components/landing/AmbientBackground'
 
 export default function FinalCTA({ onCTAClick }: CTAProps) {
   return (
@@ -10,7 +11,7 @@ export default function FinalCTA({ onCTAClick }: CTAProps) {
       id="final-cta"
       className="relative bg-zinc-950 section-pad text-center overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(124,58,237,0.15),transparent)] pointer-events-none" />
+      <AmbientBackground preset="dark" className="!inset-0" />
 
       <div className="relative max-w-container mx-auto px-4 sm:px-6">
         <motion.div
@@ -44,7 +45,7 @@ export default function FinalCTA({ onCTAClick }: CTAProps) {
 
           <motion.div variants={staggerItem} className="mt-10">
             <motion.button
-              whileHover={{ scale: 1.03, boxShadow: '0 8px 24px rgba(124,58,237,0.40)' }}
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={onCTAClick}
               className="btn-primary-lg"

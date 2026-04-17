@@ -7,9 +7,13 @@ import { STEPS } from '@/lib/constants'
 import { fadeUp, viewport } from '@/lib/motion'
 import SectionHeading from '@/components/landing/SectionHeading'
 import type { CTAProps } from '@/types/landing'
+import AmbientBackground from '@/components/landing/AmbientBackground'
 
 function DynamicIcon({ name, ...props }: { name: string; size?: number; className?: string }) {
-  const Icon = (Icons as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[name]
+  const Icon = (Icons as unknown as Record<
+    string,
+    React.ComponentType<{ size?: number; className?: string }>
+  >)[name]
   return Icon ? <Icon {...props} /> : null
 }
 
@@ -25,8 +29,9 @@ const stepsContainer = {
 
 export default function HowItWorks({ onCTAClick }: CTAProps) {
   return (
-    <section id="how-it-works" className="bg-white section-pad">
-      <div className="max-w-container mx-auto px-4 sm:px-6">
+    <section id="how-it-works" className="relative bg-white section-pad overflow-hidden">
+      <AmbientBackground preset="section" />
+      <div className="relative z-10 max-w-container mx-auto px-4 sm:px-6">
         <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={viewport}>
           <SectionHeading
             eyebrow="HOW IT WORKS"

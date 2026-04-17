@@ -13,7 +13,7 @@
     --card-foreground:      240 10% 3.9%;
     --popover:              0 0% 100%;
     --popover-foreground:   240 10% 3.9%;
-    --primary:              263 83% 58%;   /* #7C3AED brand purple  */
+    --primary:              221 83% 53%;   /* #2563EB brand blue */
     --primary-foreground:   0 0% 100%;
     --secondary:            240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -25,7 +25,7 @@
     --destructive-foreground: 0 0% 98%;
     --border:               240 5.9% 90%;
     --input:                240 5.9% 90%;
-    --ring:                 263 83% 58%;   /* brand purple focus ring */
+    --ring:                 221 83% 53%;   /* brand blue focus ring */
     --radius:               0.5rem;
   }
 
@@ -45,13 +45,13 @@
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
-  /* Brand purple text selection */
+  /* Brand blue text selection */
   ::selection {
-    background-color: #EDE9FE;
-    color: #5B21B6;
+    background-color: #DBEAFE;
+    color: #1D4ED8;
   }
 
-  /* Smooth focus outlines — brand orange */
+  /* Smooth focus outlines — brand blue */
   :focus-visible {
     @apply outline-none ring-2 ring-brand ring-offset-2;
   }
@@ -92,7 +92,7 @@
 
   /* ── Button variants ──────────────────────────────────────── */
 
-  /* Primary — purple gradient fill */
+  /* Primary — blue gradient fill */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2
            text-white font-medium text-label
@@ -101,10 +101,10 @@
            active:scale-[0.98]
            transition-all duration-150 cursor-pointer
            disabled:opacity-50 disabled:cursor-not-allowed;
-    background-image: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+    background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   }
   .btn-primary:hover {
-    background-image: linear-gradient(135deg, #9333EA 0%, #6D28D9 100%);
+    background-image: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
   }
 
   /* Primary large — for hero + final CTA sections */
@@ -115,21 +115,22 @@
            shadow-orange-lg
            active:scale-[0.98]
            transition-all duration-150 cursor-pointer;
-    background-image: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+    background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   }
   .btn-primary-lg:hover {
-    background-image: linear-gradient(135deg, #9333EA 0%, #6D28D9 100%);
+    background-image: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
   }
 
   /* Secondary — white outlined */
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2
-           bg-white text-zinc-800 font-medium text-label
+           bg-brand-50 text-brand font-medium text-label
            rounded-lg px-5 py-2.5
-           border border-zinc-200
-           hover:bg-zinc-50 hover:border-zinc-300
-           active:scale-[0.98]
-           transition-all duration-150 cursor-pointer
+           border border-transparent shadow-[0_1px_0_rgba(0,0,0,0.04)]
+           hover:bg-brand-100 hover:-translate-y-[1px]
+           hover:shadow-[0_12px_34px_-20px_rgba(37,99,235,0.30)]
+           active:translate-y-0 active:scale-[0.98]
+           transition-all duration-200 cursor-pointer
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
@@ -185,9 +186,9 @@
   .text-balance   { text-wrap: balance;  }
   .text-pretty    { text-wrap: pretty;   }
 
-  /* Purple gradient text — for stat numbers, hero accents */
+  /* Blue gradient text — for stat numbers, hero accents */
   .text-gradient-brand {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+    background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   }
 }

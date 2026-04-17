@@ -7,14 +7,17 @@ import { fadeUp, staggerContainer, staggerItem, viewport } from '@/lib/motion'
 import SectionHeading from '@/components/landing/SectionHeading'
 
 function DynamicIcon({ name, ...props }: { name: string; size?: number; className?: string }) {
-  const Icon = (Icons as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[name]
+  const Icon = (Icons as unknown as Record<
+    string,
+    React.ComponentType<{ size?: number; className?: string }>
+  >)[name]
   return Icon ? <Icon {...props} /> : null
 }
 
 export default function Features() {
   return (
-    <section id="features" className="bg-zinc-50 section-pad">
-      <div className="max-w-container mx-auto px-4 sm:px-6">
+    <section id="features" className="bg-white section-pad">
+      <div className="relative z-10 max-w-container mx-auto px-4 sm:px-6">
         <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={viewport}>
           <SectionHeading
             eyebrow="FEATURES"
@@ -34,9 +37,9 @@ export default function Features() {
             <motion.div
               key={f.title}
               variants={staggerItem}
-              whileHover={{ y: -3, boxShadow: '0 4px 12px rgba(0,0,0,0.10)' }}
+              whileHover={{ y: -2 }}
               transition={{ duration: 0.2 }}
-              className="bg-white rounded-xl border border-zinc-100 p-6 shadow-card"
+              className="bg-white rounded-xl border border-zinc-200/70 p-6"
             >
               <div className="w-9 h-9 rounded-md bg-brand-50 flex items-center justify-center">
                 <DynamicIcon name={f.icon} size={17} className="text-brand" />

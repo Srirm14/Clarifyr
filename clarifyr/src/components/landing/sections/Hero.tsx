@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { FileText, AlertTriangle, ShieldCheck } from 'lucide-react'
 import type { CTAProps } from '@/types/landing'
+import AmbientBackground from '@/components/landing/AmbientBackground'
 
 type Seg = { t: string; b: boolean; br?: boolean }
 
@@ -124,18 +125,9 @@ export default function Hero({ onCTAClick }: CTAProps) {
 
   return (
     <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center text-center pt-16 overflow-hidden">
+      <AmbientBackground preset="hero" />
 
-      {/* Background blobs */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[700px] rounded-full
-                        bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.11)_0%,transparent_68%)]" />
-        <div className="absolute top-1/3 -left-48 w-[500px] h-[500px] rounded-full
-                        bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.06)_0%,transparent_70%)]" />
-        <div className="absolute bottom-10 right-0 w-[420px] h-[420px] rounded-full
-                        bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.05)_0%,transparent_70%)]" />
-      </div>
-
-      <div className="max-w-container mx-auto section-pad px-4 sm:px-6 w-full">
+      <div className="relative z-10 max-w-container mx-auto section-pad px-4 sm:px-6 w-full">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -242,25 +234,36 @@ export default function Hero({ onCTAClick }: CTAProps) {
             transition={{ duration: 0.65, delay: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
             className="w-full max-w-[860px] mx-auto mt-16 relative"
           >
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-10
-                            bg-brand/15 blur-2xl rounded-full -z-10" />
+            {/* Soft blue base glow behind mock */}
+            <div className="pointer-events-none absolute -bottom-6 left-1/2 -translate-x-1/2 w-[72%] h-12
+                            bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.18)_0%,transparent_70%)]
+                            blur-2xl rounded-full -z-10" />
             <motion.div
               animate={{ y: [0, -7, 0] }}
               transition={{ duration: 4, ease: 'easeInOut', repeat: Infinity }}
             >
-              <div className="rounded-2xl border border-zinc-200 shadow-[0_8px_40px_rgba(124,58,237,0.10)] overflow-hidden bg-white">
+              <div className="relative rounded-2xl border border-zinc-200/70 overflow-hidden bg-white">
+                {/* Subtle top highlight sweep */}
+                <motion.div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 top-0 h-20
+                             bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.22)_0%,transparent_72%)]"
+                  animate={{ opacity: [0.55, 0.9, 0.55] }}
+                  transition={{ duration: 5.5, ease: 'easeInOut', repeat: Infinity }}
+                />
+
                 {/* Browser chrome */}
-                <div className="bg-zinc-50 border-b border-zinc-200 h-10 px-4 flex items-center gap-2">
+                <div className="bg-zinc-50/70 backdrop-blur border-b border-zinc-200/70 h-10 px-4 flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
                   <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
                   <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
-                  <div className="bg-white border border-zinc-200 rounded-md ml-3 h-6 px-3 flex items-center">
+                  <div className="bg-white/80 border border-zinc-200/70 rounded-md ml-3 h-6 px-3 flex items-center">
                     <span className="text-xs text-zinc-400">clarifyr.com/analyze/acme-nda</span>
                   </div>
                 </div>
 
                 <div className="flex h-[400px] sm:h-[440px]">
-                  <div className="flex-1 p-5 overflow-hidden">
+                  <div className="flex-1 p-5 overflow-hidden bg-white">
                     <div className="flex items-center gap-2">
                       <FileText size={15} className="text-zinc-400" />
                       <span className="text-[13px] font-medium text-zinc-700">
@@ -286,13 +289,13 @@ export default function Hero({ onCTAClick }: CTAProps) {
                         <ShieldCheck size={12} className="text-brand" />
                         <span className="text-[11px] font-semibold text-brand">Negotiation tip</span>
                       </div>
-                      <p className="text-[11px] text-brand-dark leading-relaxed mt-1">
+                      <p className="text-[11px] text-blue-700 leading-relaxed mt-1">
                         Ask to reduce to 12 months and limit to direct competitors only.
                       </p>
                     </div>
                   </div>
 
-                  <div className="w-52 flex-shrink-0 border-l border-zinc-200 bg-zinc-50 p-4">
+                  <div className="w-52 flex-shrink-0 border-l border-zinc-200/70 bg-zinc-50/70 p-4">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-3">Risk Summary</p>
                     {[
                       { label: 'Critical Risks', count: '3',  bg: 'bg-red-100',    text: 'text-red-600'    },
@@ -311,7 +314,7 @@ export default function Hero({ onCTAClick }: CTAProps) {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-5 pt-4 border-t border-zinc-200">
+                    <div className="mt-5 pt-4 border-t border-zinc-200/70">
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Benchmark</p>
                       <p className="text-[11px] text-zinc-500 leading-relaxed">
                         Non-solicit duration is in the{' '}

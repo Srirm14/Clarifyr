@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BLOG_POSTS } from '@/lib/blog/posts'
+import AmbientBackground from '@/components/landing/AmbientBackground'
 
 export const metadata: Metadata = {
   title:       'Blog – Contract Tips, Legal Guides & AI Insights',
@@ -16,8 +17,9 @@ export const metadata: Metadata = {
 export default function BlogPage() {
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-zinc-200 h-16 flex items-center">
-        <div className="max-w-container mx-auto px-4 sm:px-6 w-full flex items-center justify-between">
+      <header className="relative h-16 flex items-center overflow-hidden">
+        <AmbientBackground preset="sectionAlt" />
+        <div className="relative z-10 max-w-container mx-auto px-4 sm:px-6 w-full flex items-center justify-between">
           <Link href="/" className="text-xl font-bold tracking-tight text-zinc-950">
             Clarif<span className="text-brand">yr</span>
           </Link>
@@ -27,8 +29,9 @@ export default function BlogPage() {
         </div>
       </header>
 
-      <div className="bg-zinc-50 border-b border-zinc-200 py-14">
-        <div className="max-w-container mx-auto px-4 sm:px-6">
+      <div className="relative bg-white py-14 overflow-hidden">
+        <AmbientBackground preset="section" />
+        <div className="relative z-10 max-w-container mx-auto px-4 sm:px-6">
           <p className="eyebrow-label mb-3">RESOURCES</p>
           <h1 className="text-section font-bold text-zinc-950">Legal clarity, explained.</h1>
           <p className="body-lead mt-3 max-w-xl">

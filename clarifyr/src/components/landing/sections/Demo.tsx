@@ -11,7 +11,7 @@ export default function Demo({ onCTAClick }: CTAProps) {
   const inView  = useInView(barRef, { once: true, margin: '-100px' })
 
   return (
-    <section id="demo" className="bg-zinc-50 section-pad">
+    <section id="demo" className="bg-white section-pad">
       <div className="max-w-container mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={viewport}>

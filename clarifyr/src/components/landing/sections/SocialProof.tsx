@@ -6,8 +6,8 @@ import { fadeIn, viewport } from '@/lib/motion'
 
 export default function SocialProof() {
   return (
-    <section id="social-proof" className="bg-zinc-50 border-y border-zinc-200 py-12">
-      <div className="max-w-container mx-auto px-4 sm:px-6">
+    <section id="social-proof" className="bg-white py-12">
+      <div className="relative z-10 max-w-container mx-auto px-4 sm:px-6">
         <motion.div
           variants={fadeIn}
           initial="hidden"

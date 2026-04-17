@@ -46,15 +46,15 @@ const config: Config = {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
 
-        // Primary brand — purple/violet gradient
+        // Primary brand — Notion-like blue
         // Used for: CTAs, links, focus rings, highlights, badges
         brand: {
-          DEFAULT: '#7C3AED', // primary — all main CTAs
-          dark:    '#6D28D9', // hover state on brand buttons
-          light:   '#A78BFA', // accent text, eyebrow labels
-          50:      '#F5F3FF', // tinted bg — feature icon backgrounds
-          100:     '#EDE9FE', // tinted bg — hover tints
-          200:     '#DDD6FE', // tinted bg — active states
+          DEFAULT: '#2563EB', // primary — all main CTAs
+          dark:    '#1D4ED8', // hover state on brand buttons
+          light:   '#60A5FA', // accent text, eyebrow labels
+          50:      '#EFF6FF', // tinted bg — feature icon backgrounds
+          100:     '#DBEAFE', // tinted bg — hover tints
+          200:     '#BFDBFE', // tinted bg — active states
         },
 
         // Risk severity — used for clause badges, bars, callouts
@@ -119,8 +119,8 @@ const config: Config = {
         // modal:      dialog/drawer containers
         card:        '0 1px 3px 0 rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.06)',
         'card-hover':'0 4px 12px 0 rgba(0,0,0,0.10), 0 2px 4px -1px rgba(0,0,0,0.06)',
-        orange:      '0 4px 14px 0 rgba(124,58,237,0.30)',
-        'orange-lg': '0 8px 24px 0 rgba(124,58,237,0.25)',
+        orange:      '0 4px 14px 0 rgba(37,99,235,0.28)',
+        'orange-lg': '0 8px 24px 0 rgba(37,99,235,0.22)',
         modal:       '0 20px 60px -10px rgba(0,0,0,0.18)',
         input:       '0 1px 2px 0 rgba(0,0,0,0.05)',
       },

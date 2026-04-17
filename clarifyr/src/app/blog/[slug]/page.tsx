@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { BLOG_POSTS, getPostBySlug } from '@/lib/blog/posts'
 import BlogPostContent from '@/components/blog/BlogPostContent'
+import AmbientBackground from '@/components/landing/AmbientBackground'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -55,8 +56,9 @@ export default async function BlogPostPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
 
-      <header className="border-b border-zinc-200 h-16 flex items-center">
-        <div className="max-w-container mx-auto px-4 sm:px-6 w-full flex items-center justify-between">
+      <header className="relative h-16 flex items-center overflow-hidden">
+        <AmbientBackground preset="sectionAlt" />
+        <div className="relative z-10 max-w-container mx-auto px-4 sm:px-6 w-full flex items-center justify-between">
           <Link href="/" className="text-xl font-bold tracking-tight text-zinc-950">
             Clarif<span className="text-brand">yr</span>
           </Link>
@@ -66,8 +68,9 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
       </header>
 
-      <div className="bg-zinc-50 border-b border-zinc-200 py-14">
-        <div className="max-w-prose mx-auto px-4 sm:px-6">
+      <div className="relative bg-white py-14 overflow-hidden">
+        <AmbientBackground preset="section" />
+        <div className="relative z-10 max-w-prose mx-auto px-4 sm:px-6">
           <span className="inline-block text-[11px] font-semibold uppercase tracking-widest
                            text-brand bg-brand-50 px-2.5 py-1 rounded-full mb-4">
             {post.category}

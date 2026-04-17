@@ -3,13 +3,16 @@ import * as Icons from 'lucide-react'
 import { FOOTER_COLUMNS, SOCIAL_LINKS } from '@/lib/constants'
 
 function SocialIcon({ name, ...props }: { name: string; size?: number; className?: string }) {
-  const Icon = (Icons as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[name]
+  const Icon = (Icons as unknown as Record<
+    string,
+    React.ComponentType<{ size?: number; className?: string }>
+  >)[name]
   return Icon ? <Icon {...props} /> : null
 }
 
 export default function Footer() {
   return (
-    <footer id="footer" className="bg-white border-t border-zinc-200 py-16">
+    <footer id="footer" className="bg-white py-16">
       <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
           <div>

@@ -13,7 +13,7 @@ import SectionHeading from '@/components/landing/SectionHeading'
 
 export default function FAQ() {
   return (
-    <section id="faq" className="bg-zinc-50 section-pad">
+    <section id="faq" className="bg-white section-pad">
       <div className="max-w-container mx-auto px-4 sm:px-6">
         <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={viewport}>
           <SectionHeading
@@ -31,7 +31,7 @@ export default function FAQ() {
         >
           <Accordion type="single" collapsible className="w-full">
             {FAQ_ITEMS.map((item, i) => (
-              <motion.div key={i} variants={staggerItem}>
+              <motion.div key={item.q} variants={staggerItem}>
                 <AccordionItem value={`faq-${i}`} className="border-b border-zinc-200">
                   <AccordionTrigger
                     className="text-[15px] font-medium text-zinc-900 text-left py-5

@@ -5,16 +5,21 @@ import * as Icons from 'lucide-react'
 import { PROBLEMS } from '@/lib/constants'
 import { fadeUp, staggerContainer, staggerItem, viewport } from '@/lib/motion'
 import SectionHeading from '@/components/landing/SectionHeading'
+import AmbientBackground from '@/components/landing/AmbientBackground'
 
 function DynamicIcon({ name, ...props }: { name: string; size?: number; className?: string }) {
-  const Icon = (Icons as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[name]
+  const Icon = (Icons as unknown as Record<
+    string,
+    React.ComponentType<{ size?: number; className?: string }>
+  >)[name]
   return Icon ? <Icon {...props} /> : null
 }
 
 export default function Problem() {
   return (
-    <section id="problem" className="bg-white section-pad">
-      <div className="max-w-container mx-auto px-4 sm:px-6">
+    <section id="problem" className="relative bg-white section-pad overflow-hidden">
+      <AmbientBackground preset="section" />
+      <div className="relative z-10 max-w-container mx-auto px-4 sm:px-6">
         <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={viewport}>
           <SectionHeading
             eyebrow="THE PROBLEM"
