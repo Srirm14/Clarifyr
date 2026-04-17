@@ -16,7 +16,7 @@ export default function LegalLayout({ title, lastUpdated, children }: LegalLayou
           <Link href="/" className="text-xl font-bold tracking-tight text-zinc-950">
             Clarif<span className="text-brand">yr</span>
           </Link>
-          <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
+          <Link href="/" className="text-sm text-zinc-950/90 hover:text-zinc-950 transition-colors">
             ← Back to home
           </Link>
         </div>

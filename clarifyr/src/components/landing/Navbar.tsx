@@ -37,8 +37,11 @@ export default function Navbar({ onCTAClick }: NavbarProps) {
             <a
               key={link.label}
               href={link.href}
-              className="px-3.5 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-900
-                         rounded-md hover:bg-zinc-100 transition-colors duration-150"
+              className="px-3.5 py-2 text-sm font-medium text-zinc-600
+                         rounded-md transition-colors duration-150
+                         hover:bg-brand-50 hover:text-zinc-950
+                         active:bg-brand-100
+                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               {link.label}
             </a>
@@ -83,8 +86,11 @@ export default function Navbar({ onCTAClick }: NavbarProps) {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="px-3.5 py-2.5 text-sm font-medium text-zinc-600 hover:text-zinc-900
-                             rounded-md hover:bg-zinc-50 transition-colors"
+                  className="px-3.5 py-2.5 text-sm font-medium text-zinc-700
+                             rounded-md transition-colors
+                             hover:bg-brand-50 hover:text-zinc-950
+                             active:bg-brand-100
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   {link.label}
                 </a>
