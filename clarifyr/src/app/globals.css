@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base layer: CSS variables + resets ─────────────────────── */
+@layer base {
+
+  :root {
+    /* shadcn/ui CSS variable map — must match tailwind brand tokens */
+    --background:           0 0% 100%;
+    --foreground:           240 10% 3.9%;
+    --card:                 0 0% 100%;
+    --card-foreground:      240 10% 3.9%;
+    --popover:              0 0% 100%;
+    --popover-foreground:   240 10% 3.9%;
+    --primary:              263 83% 58%;   /* #7C3AED brand purple  */
+    --primary-foreground:   0 0% 100%;
+    --secondary:            240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted:                240 4.8% 95.9%;
+    --muted-foreground:     240 3.8% 46.1%;
+    --accent:               240 4.8% 95.9%;
+    --accent-foreground:    240 5.9% 10%;
+    --destructive:          0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border:               240 5.9% 90%;
+    --input:                240 5.9% 90%;
+    --ring:                 263 83% 58%;   /* brand purple focus ring */
+    --radius:               0.5rem;
+  }
+
+  * {
+    @apply border-border box-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-white text-zinc-950 font-sans;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* Brand purple text selection */
+  ::selection {
+    background-color: #EDE9FE;
+    color: #5B21B6;
+  }
+
+  /* Smooth focus outlines — brand orange */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2;
+  }
+}
+
+/* ─── Component layer: reusable class utilities ──────────────── */
+@layer components {
+
+  /* Container */
+  .container-base {
+    @apply max-w-container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section padding */
+  .section-pad {
+    @apply py-[64px] md:py-[96px];
+  }
+
+  /* Eyebrow label — sits above every section heading */
+  .eyebrow-label {
+    @apply text-eyebrow font-semibold uppercase tracking-[0.1em] text-brand-light;
+  }
+
+  /* Section heading */
+  .heading-section {
+    @apply text-section font-bold tracking-tight text-zinc-950 text-balance;
+  }
+
+  /* Subheading */
+  .heading-sub {
+    @apply text-subsection font-semibold tracking-tight text-zinc-900;
+  }
+
+  /* Body copy under headings */
+  .body-lead {
+    @apply text-lead text-zinc-500 leading-relaxed;
+  }
+
+  /* ── Button variants ──────────────────────────────────────── */
+
+  /* Primary — purple gradient fill */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           text-white font-medium text-label
+           rounded-lg px-5 py-2.5
+           shadow-orange
+           active:scale-[0.98]
+           transition-all duration-150 cursor-pointer
+           disabled:opacity-50 disabled:cursor-not-allowed;
+    background-image: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+  }
+  .btn-primary:hover {
+    background-image: linear-gradient(135deg, #9333EA 0%, #6D28D9 100%);
+  }
+
+  /* Primary large — for hero + final CTA sections */
+  .btn-primary-lg {
+    @apply inline-flex items-center justify-center gap-2
+           text-white font-semibold text-body
+           rounded-lg px-8 py-4
+           shadow-orange-lg
+           active:scale-[0.98]
+           transition-all duration-150 cursor-pointer;
+    background-image: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+  }
+  .btn-primary-lg:hover {
+    background-image: linear-gradient(135deg, #9333EA 0%, #6D28D9 100%);
+  }
+
+  /* Secondary — white outlined */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-white text-zinc-800 font-medium text-label
+           rounded-lg px-5 py-2.5
+           border border-zinc-200
+           hover:bg-zinc-50 hover:border-zinc-300
+           active:scale-[0.98]
+           transition-all duration-150 cursor-pointer
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Ghost — transparent, text only */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5
+           text-zinc-600 font-medium text-label
+           hover:text-zinc-900
+           transition-colors duration-150 cursor-pointer;
+  }
+
+  /* ── Card variants ────────────────────────────────────────── */
+
+  .card-base {
+    @apply bg-white rounded-xl border border-zinc-200 shadow-card;
+  }
+
+  .card-surface {
+    @apply bg-surface rounded-xl border border-zinc-100 shadow-card;
+  }
+
+  /* ── Risk severity badges ─────────────────────────────────── */
+
+  .badge-critical {
+    @apply inline-flex items-center gap-1 text-micro font-semibold uppercase
+           tracking-wide px-2.5 py-1 rounded-full
+           bg-risk-criticalBg text-risk-critical border border-risk-criticalBdr;
+  }
+
+  .badge-risky {
+    @apply inline-flex items-center gap-1 text-micro font-semibold uppercase
+           tracking-wide px-2.5 py-1 rounded-full
+           bg-risk-riskyBg text-risk-risky border border-risk-riskyBdr;
+  }
+
+  .badge-standard {
+    @apply inline-flex items-center gap-1 text-micro font-semibold uppercase
+           tracking-wide px-2.5 py-1 rounded-full
+           bg-risk-standardBg text-risk-standard border border-risk-standardBdr;
+  }
+
+  /* ── Form input override — brand focus ring ───────────────── */
+  .input-base {
+    @apply h-10 rounded-lg border-zinc-200 bg-white text-body-sm text-zinc-900
+           placeholder:text-zinc-400
+           focus-visible:ring-1 focus-visible:ring-brand focus-visible:border-brand
+           transition-colors duration-150 shadow-input;
+  }
+}
+
+/* ─── Utility layer: one-off helpers ─────────────────────────── */
+@layer utilities {
+  .text-balance   { text-wrap: balance;  }
+  .text-pretty    { text-wrap: pretty;   }
+
+  /* Purple gradient text — for stat numbers, hero accents */
+  .text-gradient-brand {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+  }
+}
