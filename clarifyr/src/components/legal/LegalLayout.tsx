@@ -28,10 +28,14 @@ export default function LegalLayout({ title, lastUpdated, children }: LegalLayou
       </div>
 
       <main className="max-w-prose mx-auto px-4 sm:px-6 py-16">
-        <div className="prose prose-zinc prose-headings:font-semibold
-                        prose-headings:tracking-tight prose-a:text-brand
-                        prose-a:no-underline hover:prose-a:underline
-                        prose-strong:text-zinc-900 max-w-none">
+        <div className="prose prose-zinc prose-lg max-w-none
+                        prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-zinc-950
+                        prose-h2:text-subsection prose-h2:mt-10 prose-h2:mb-3
+                        prose-p:text-body prose-p:leading-relaxed
+                        prose-li:text-body-sm prose-li:leading-relaxed
+                        prose-strong:text-zinc-900
+                        prose-a:text-brand prose-a:no-underline hover:prose-a:underline
+                        prose-blockquote:border-brand/30 prose-blockquote:text-zinc-600">
           {children}
         </div>
       </main>
