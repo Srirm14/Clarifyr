@@ -11,6 +11,10 @@ export default async function DocumentDetailPage({
   const doc = await getDocumentById({ id, simulateMs: 300 })
   if (!doc) notFound()
 
-  return <DocumentDetailClient doc={doc} />
+  return (
+    <div className="h-full min-h-0 flex flex-col overflow-hidden">
+      <DocumentDetailClient doc={doc} />
+    </div>
+  )
 }
 

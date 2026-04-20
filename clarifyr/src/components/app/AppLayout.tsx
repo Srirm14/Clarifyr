@@ -22,9 +22,11 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
     >
       <AppSidebar />
 
-      <SidebarInset className="flex flex-col min-h-screen bg-white">
+      <SidebarInset className="flex flex-col h-screen overflow-hidden bg-white">
         <AppNavbar />
-        <main className="flex-1 px-6 py-6 min-h-0 overflow-hidden">{children}</main>
+        <main className="flex-1 px-6 py-6 min-h-0 overflow-hidden flex flex-col">
+          <div className="flex-1 min-h-0">{children}</div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   )

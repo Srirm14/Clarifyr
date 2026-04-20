@@ -164,11 +164,15 @@
   /* ── Card variants ────────────────────────────────────────── */
 
   .card-base {
-    @apply bg-white rounded-xl border border-zinc-200 shadow-card;
+    @apply rounded-2xl border border-zinc-200/70 shadow-card;
+    @apply bg-gradient-to-b from-white to-zinc-50/40;
+    @apply ring-1 ring-zinc-950/5;
   }
 
   .card-surface {
-    @apply bg-surface rounded-xl border border-zinc-100 shadow-card;
+    @apply rounded-2xl border border-zinc-200/60 shadow-card;
+    @apply bg-gradient-to-b from-white to-surface;
+    @apply ring-1 ring-zinc-950/5;
   }
 
   /* ── Risk severity badges ─────────────────────────────────── */
