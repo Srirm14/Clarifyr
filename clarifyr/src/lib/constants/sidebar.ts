@@ -1,7 +1,6 @@
 import {
   LayoutDashboard,
   FileText,
-  Folder,
 } from 'lucide-react'
 import { getDocumentByIdSync, RECENT_DOC_IDS } from '@/lib/mock/documents'
 
@@ -16,11 +15,6 @@ export const SIDEBAR_NAV = [
     label: 'Documents',
     href: '/documents',
     icon: FileText,
-  },
-  {
-    label: 'Folders',
-    href: '/folders',
-    icon: Folder,
   },
 ] as const
 

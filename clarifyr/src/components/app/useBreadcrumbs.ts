@@ -22,7 +22,6 @@ export default function useBreadcrumbs(): Crumb[] {
       { label: name ?? (id ? `Document ${id}` : 'Document') },
     ]
   }
-  if (pathname.startsWith('/folders')) return [{ label: 'Folders', href: '/folders' }]
 
   return [{ label: 'Home', href: '/app' }]
 }
