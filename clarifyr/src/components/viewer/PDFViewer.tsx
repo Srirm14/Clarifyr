@@ -1,11 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Document, Page, pdfjs } from 'react-pdf'
+import type { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, RenderTask } from 'pdfjs-dist'
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft,
   ChevronRight,
+  Hand,
+  Type,
   ZoomIn,
   ZoomOut,
   FileWarning,
@@ -17,13 +20,165 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import DocSensePanel from '@/components/viewer/DocSensePanel'
 import type { DocMeta } from '@/components/viewer/viewer.types'
 import { cn } from '@/lib/utils'
+import type { TextLayerImages } from 'pdfjs-dist/types/web/text_layer_builder'
+import { TextLayerBuilder } from 'pdfjs-dist/web/pdf_viewer.mjs'
 
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
 
 const ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 // Thumbnail dimensions — A4 ratio (1:√2), computed once
 const THUMB_W = 64
-const THUMB_H = Math.round(THUMB_W * 1.414) // 90px
+const A4_RATIO = 1.414
+const THUMB_H = Math.round(THUMB_W * A4_RATIO) // 90px
+
+const BOOKMARK_CLIP = 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)'
+const BOOKMARK_FILL_BG = [
+  // Material base: warm tonal blend
+  'linear-gradient(120deg, rgba(255,237,213,0.94) 0%, rgba(253,186,116,0.70) 28%, rgba(251,146,60,0.58) 52%, rgba(232,93,4,0.62) 74%, rgba(154,52,18,0.46) 100%)',
+  // Soft apricot highlight near leading edge
+  'radial-gradient(260px 80px at 18% 22%, rgba(255,255,255,0.42), transparent 62%)',
+  // Depth vignette on the far edge
+  'radial-gradient(220px 90px at 92% 58%, rgba(154,52,18,0.22), transparent 68%)',
+].join(',')
+const BOOKMARK_OUTLINE_BG = 'linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.78))'
+const BOOKMARK_SPECULAR_BG = 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 40%, transparent 78%)'
+const BOOKMARK_BLOOM_BG = 'radial-gradient(closest-side, rgba(251,146,60,0.16), transparent 72%)'
+
+function loadPdfTask(fileUrl: string): PDFDocumentLoadingTask {
+  return getDocument(fileUrl)
+}
+
+function PdfThumb({
+  pdf,
+  pageNumber,
+  width,
+  active,
+}: Readonly<{
+  pdf: PDFDocumentProxy
+  pageNumber: number
+  width: number
+  active: boolean
+}>) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const canvasEl = canvasRef.current
+    if (!canvasEl) return
+    let renderTask: RenderTask | null = null
+
+    async function run(canvas: HTMLCanvasElement) {
+      const page = await pdf.getPage(pageNumber)
+      if (cancelled) return
+      const viewport1 = page.getViewport({ scale: 1 })
+      const scale = width / viewport1.width
+      const viewport = page.getViewport({ scale })
+
+      const ctx = canvas.getContext('2d', { alpha: false })
+      if (!ctx) return
+
+      // Avoid blurry thumbnails on retina
+      const dpr = globalThis.devicePixelRatio || 1
+      canvas.style.width = `${Math.floor(viewport.width)}px`
+      canvas.style.height = `${Math.floor(viewport.height)}px`
+      canvas.width = Math.floor(viewport.width * dpr)
+      canvas.height = Math.floor(viewport.height * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+      renderTask = page.render({ canvasContext: ctx, viewport, canvas })
+      await renderTask.promise
+    }
+
+    run(canvasEl)
+    return () => {
+      cancelled = true
+      renderTask?.cancel()
+    }
+  }, [pdf, pageNumber, width])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={cn('block', active ? 'opacity-100' : 'opacity-95')}
+    />
+  )
+}
+
+function PdfPage({
+  pdf,
+  pageNumber,
+  width,
+  enableTextSelection,
+}: Readonly<{
+  pdf: PDFDocumentProxy
+  pageNumber: number
+  width: number
+  enableTextSelection: boolean
+}>) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const textLayerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const canvasEl = canvasRef.current
+    const textLayerEl = textLayerRef.current
+    if (!canvasEl || !textLayerEl) return
+    let renderTask: RenderTask | null = null
+    let textLayerBuilder: TextLayerBuilder | null = null
+
+    async function run(canvas: HTMLCanvasElement, textLayer: HTMLDivElement) {
+      const page: PDFPageProxy = await pdf.getPage(pageNumber)
+      if (cancelled) return
+
+      const viewport1 = page.getViewport({ scale: 1 })
+      const scale = width / viewport1.width
+      const viewport = page.getViewport({ scale })
+
+      const ctx = canvas.getContext('2d', { alpha: false })
+      if (!ctx) return
+
+      const dpr = globalThis.devicePixelRatio || 1
+      canvas.style.width = `${Math.floor(viewport.width)}px`
+      canvas.style.height = `${Math.floor(viewport.height)}px`
+      canvas.width = Math.floor(viewport.width * dpr)
+      canvas.height = Math.floor(viewport.height * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+      // Render raster layer
+      renderTask = page.render({ canvasContext: ctx, viewport, canvas })
+      await renderTask.promise
+
+      // Render text layer (for selection) when enabled
+      textLayer.innerHTML = ''
+      textLayer.style.width = `${Math.floor(viewport.width)}px`
+      textLayer.style.height = `${Math.floor(viewport.height)}px`
+      if (!enableTextSelection) return
+
+      textLayerBuilder = new TextLayerBuilder({ pdfPage: page })
+      // Use the builder's own div for consistent selection behavior.
+      textLayer.appendChild(textLayerBuilder.div)
+      const images = null as unknown as TextLayerImages
+      await textLayerBuilder.render({ viewport, images })
+    }
+
+    run(canvasEl, textLayerEl)
+    return () => {
+      cancelled = true
+      renderTask?.cancel()
+      textLayerBuilder?.cancel()
+    }
+  }, [pdf, pageNumber, width, enableTextSelection])
+
+  return (
+    <div className="relative">
+      <canvas ref={canvasRef} className="block" />
+      <div
+        ref={textLayerRef}
+        className={cn('pdf-textLayer', enableTextSelection ? 'pointer-events-auto' : 'pointer-events-none')}
+      />
+    </div>
+  )
+}
 
 function AnalyzeBookmark({
   onClick,
@@ -52,7 +207,7 @@ function AnalyzeBookmark({
         )}
         style={{
           // Directional bookmark/tab silhouette (points into the document stage)
-          clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+          clipPath: BOOKMARK_CLIP,
         }}
         aria-label="Open DocSense panel"
       >
@@ -61,7 +216,7 @@ function AnalyzeBookmark({
           aria-hidden
           className="absolute inset-0 bg-brand/40"
           style={{
-            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+            clipPath: BOOKMARK_CLIP,
           }}
         />
 
@@ -70,9 +225,8 @@ function AnalyzeBookmark({
           aria-hidden
           className="absolute inset-px backdrop-blur-sm"
           style={{
-            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
-            background:
-              'linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.78))',
+            clipPath: BOOKMARK_CLIP,
+            background: BOOKMARK_OUTLINE_BG,
           }}
           animate={{ opacity: hover ? 0 : 1 }}
           transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
@@ -83,8 +237,7 @@ function AnalyzeBookmark({
           aria-hidden
           className="absolute -inset-8 blur-3xl"
           style={{
-            background:
-              'radial-gradient(closest-side, rgba(251,146,60,0.16), transparent 72%)',
+            background: BOOKMARK_BLOOM_BG,
           }}
           animate={{ opacity: hover ? 1 : 0 }}
           transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
@@ -95,14 +248,8 @@ function AnalyzeBookmark({
           aria-hidden
           className="absolute inset-px backdrop-blur-sm"
           style={{
-            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
-            background:
-              // Material base: warm tonal blend
-              'linear-gradient(120deg, rgba(255,237,213,0.94) 0%, rgba(253,186,116,0.70) 28%, rgba(251,146,60,0.58) 52%, rgba(232,93,4,0.62) 74%, rgba(154,52,18,0.46) 100%),' +
-              // Soft apricot highlight near leading edge
-              'radial-gradient(260px 80px at 18% 22%, rgba(255,255,255,0.42), transparent 62%),' +
-              // Depth vignette on the far edge
-              'radial-gradient(220px 90px at 92% 58%, rgba(154,52,18,0.22), transparent 68%)',
+            clipPath: BOOKMARK_CLIP,
+            background: BOOKMARK_FILL_BG,
             backgroundSize: '260% 100%, 100% 100%, 100% 100%',
             backgroundPosition: '18% 50%, 0% 0%, 0% 0%',
           }}
@@ -122,7 +269,7 @@ function AnalyzeBookmark({
           aria-hidden
           className="absolute inset-px opacity-65"
           style={{
-            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+            clipPath: BOOKMARK_CLIP,
             background:
               'linear-gradient(to bottom, rgba(255,255,255,0.40), transparent 48%)',
             pointerEvents: 'none',
@@ -134,9 +281,8 @@ function AnalyzeBookmark({
           aria-hidden
           className="absolute top-0 left-0 right-0 h-6 opacity-40"
           style={{
-            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
-            background:
-              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 40%, transparent 78%)',
+            clipPath: BOOKMARK_CLIP,
+            background: BOOKMARK_SPECULAR_BG,
             filter: 'blur(0.2px)',
           }}
           animate={{ x: hover ? [0, 10, 0] : 0, opacity: hover ? 0.55 : 0 }}
@@ -158,7 +304,7 @@ function AnalyzeBookmark({
           }}
           transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
           style={{
-            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+            clipPath: BOOKMARK_CLIP,
           }}
         />
 
@@ -228,16 +374,48 @@ function PageSkeleton({ width, height }: Readonly<{ width: number; height: numbe
 }
 
 export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
+  const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [numPages, setNumPages] = useState(0)
   const [page, setPage] = useState(1)
   const [zoomIdx, setZoomIdx] = useState(2) // default 1.0×
   const [showPanel, setShowPanel] = useState(true)
   const [thumbsReady, setThumbsReady] = useState(false)
   const [flashPage, setFlashPage] = useState<number | null>(null)
+  const [mode, setMode] = useState<'pan' | 'select'>('pan')
+  const panningRef = useRef(false)
+  const panStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 })
+  const stageRef = useRef<HTMLDivElement | null>(null)
+  const viewportRef = useRef<HTMLElement | null>(null)
 
   // Measure the main canvas container to compute responsive page width
   const canvasRef = useRef<HTMLDivElement>(null)
   const [canvasWidth, setCanvasWidth] = useState(720)
+
+  useEffect(() => {
+    let cancelled = false
+    const task = loadPdfTask(doc.fileUrl)
+
+    task.promise
+      .then(p => {
+        if (cancelled) return
+        setPdf(p)
+        setLoadError(null)
+        setNumPages(p.numPages)
+        setThumbsReady(true)
+      })
+      .catch(err => {
+        if (cancelled) return
+        setPdf(null)
+        setThumbsReady(false)
+        setLoadError(err instanceof Error ? err.message : String(err))
+      })
+
+    return () => {
+      cancelled = true
+      task.destroy()
+    }
+  }, [doc.fileUrl])
 
   useEffect(() => {
     const el = canvasRef.current
@@ -258,12 +436,11 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
 
   // Base page width fills available canvas width (minus 96px padding), max 780px
   const baseWidth = Math.min(Math.max(400, canvasWidth - 96), 780)
-  const pageSkelHeight = Math.round(baseWidth * 1.414) // A4 aspect at base width
+  const renderWidth = Math.round(baseWidth * zoom)
+  const renderHeight = Math.round(baseWidth * A4_RATIO * zoom)
+  const pageSkelHeight = Math.round(baseWidth * A4_RATIO) // A4 aspect at base width
 
-  const handleLoad = useCallback(({ numPages: n }: { numPages: number }) => {
-    setNumPages(n)
-    setThumbsReady(true)
-  }, [])
+  // pdf load handled by effect above
 
   const jumpToPage = useCallback((p: number) => {
     setPage(Math.min(pageCount, Math.max(1, p)))
@@ -275,6 +452,69 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
     const id = globalThis.setTimeout(() => setFlashPage(null), 700)
     return () => globalThis.clearTimeout(id)
   }, [flashPage])
+
+  const refreshViewportRef = useCallback(() => {
+    const root = stageRef.current
+    viewportRef.current = root?.querySelector<HTMLElement>('[data-radix-scroll-area-viewport]') ?? null
+    return viewportRef.current
+  }, [])
+
+  useEffect(() => {
+    const vp = refreshViewportRef()
+    if (!vp) return
+
+    // Cursor hints per mode (kept calm; grab only in pan mode)
+    vp.style.cursor = mode === 'pan' ? 'grab' : ''
+
+    const onWindowMove = (e: MouseEvent) => {
+      if (!panningRef.current) return
+      const viewport = viewportRef.current
+      if (!viewport) return
+      const dx = e.clientX - panStartRef.current.x
+      const dy = e.clientY - panStartRef.current.y
+      viewport.scrollLeft = panStartRef.current.scrollLeft - dx
+      viewport.scrollTop = panStartRef.current.scrollTop - dy
+    }
+
+    const onWindowUp = () => {
+      if (!panningRef.current) return
+      panningRef.current = false
+      const viewport = viewportRef.current
+      if (!viewport) return
+      viewport.style.cursor = mode === 'pan' ? 'grab' : ''
+      viewport.style.userSelect = ''
+      globalThis.removeEventListener('mousemove', onWindowMove)
+      globalThis.removeEventListener('mouseup', onWindowUp)
+    }
+
+    const onDown = (e: MouseEvent) => {
+      if (mode !== 'pan') return
+      if (e.button !== 0) return
+      e.preventDefault()
+
+      const viewport = viewportRef.current ?? refreshViewportRef()
+      if (!viewport) return
+
+      panningRef.current = true
+      viewport.style.cursor = 'grabbing'
+      viewport.style.userSelect = 'none'
+      panStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        scrollLeft: viewport.scrollLeft,
+        scrollTop: viewport.scrollTop,
+      }
+      globalThis.addEventListener('mousemove', onWindowMove)
+      globalThis.addEventListener('mouseup', onWindowUp)
+    }
+
+    vp.addEventListener('mousedown', onDown)
+    return () => {
+      vp.removeEventListener('mousedown', onDown)
+      onWindowUp()
+      vp.style.cursor = ''
+    }
+  }, [mode, refreshViewportRef])
 
   return (
     <TooltipProvider>
@@ -289,28 +529,22 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
 
           <ScrollArea className="flex-1 min-h-0">
             <div className="px-3 py-3 flex flex-col gap-3">
-              <Document
-                file={doc.fileUrl}
-                loading={
-                  <div className="flex flex-col gap-2">
-                    {[0, 1, 2].map(i => (
-                      <div key={i} className="rounded-md overflow-hidden">
-                        <div
-                          className="rounded-md bg-zinc-100 animate-pulse"
-                          style={{ width: THUMB_W, height: THUMB_H }}
-                        />
-                        <div className="mt-1 flex justify-center">
-                          <div className="h-1.5 w-4 rounded bg-zinc-100 animate-pulse" />
-                        </div>
+              {!thumbsReady || !pdf ? (
+                <div className="flex flex-col gap-2">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="rounded-md overflow-hidden">
+                      <div
+                        className="rounded-md bg-zinc-100 animate-pulse"
+                        style={{ width: THUMB_W, height: THUMB_H }}
+                      />
+                      <div className="mt-1 flex justify-center">
+                        <div className="h-1.5 w-4 rounded bg-zinc-100 animate-pulse" />
                       </div>
-                    ))}
-                  </div>
-                }
-                error={null}
-                onLoadSuccess={handleLoad}
-              >
-                {thumbsReady &&
-                  Array.from({ length: pageCount }, (_, i) => i + 1).map(p => {
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                Array.from({ length: pageCount }, (_, i) => i + 1).map(p => {
                     const active = p === safePage
                     const flashing = flashPage === p
                     return (
@@ -338,18 +572,7 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                         <div className="flex flex-col items-center">
                           <div className="w-full px-2 pt-2 pb-1.5">
                             <div className="rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)] bg-white">
-                              <Page
-                                pageNumber={p}
-                                width={THUMB_W}
-                                renderAnnotationLayer={false}
-                                renderTextLayer={false}
-                                loading={
-                                  <div
-                                    className="bg-zinc-100 animate-pulse"
-                                    style={{ width: THUMB_W, height: THUMB_H }}
-                                  />
-                                }
-                              />
+                              <PdfThumb pdf={pdf} pageNumber={p} width={THUMB_W} active={active} />
                             </div>
                           </div>
 
@@ -368,8 +591,8 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                         </div>
                       </motion.button>
                     )
-                  })}
-              </Document>
+                  })
+              )}
             </div>
           </ScrollArea>
           </div>
@@ -389,42 +612,49 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
             <div className="absolute inset-0 pointer-events-none
                             shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-10px_24px_rgba(0,0,0,0.08)]" />
 
-            <ScrollArea className="h-full relative">
-              <div className="py-6 flex justify-center">
-                {thumbsReady ? (
-                  <Document
-                    file={doc.fileUrl}
-                    loading={<PageSkeleton width={baseWidth} height={pageSkelHeight} />}
-                    error={
-                      <ViewerError message="PDF not found. Make sure /public/sample.pdf exists and reload." />
-                    }
-                    onLoadSuccess={handleLoad}
+            <div ref={stageRef} className="h-full relative">
+              <ScrollArea
+                className={cn(
+                  'h-full relative',
+                )}
+              >
+                {!thumbsReady || !pdf ? (
+                  loadError ? (
+                    <ViewerError message={loadError} />
+                  ) : (
+                    <PageSkeleton width={baseWidth} height={pageSkelHeight} />
+                  )
+                ) : (
+                  <div
+                    className={cn(
+                      'py-6 px-8',
+                      renderWidth <= canvasWidth - 96 ? 'flex justify-center' : 'flex justify-start',
+                    )}
                   >
                     <motion.div
-                      animate={{ scale: zoom }}
-                      transition={{ type: 'spring', stiffness: 220, damping: 26 }}
-                      style={{ transformOrigin: 'top center' }}
-                      className="rounded-[28px] p-px
+                      key={`${safePage}-${zoomIdx}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+                      style={{ width: renderWidth, height: renderHeight }}
+                      className="rounded-[28px] p-px flex-shrink-0
                                  bg-[linear-gradient(135deg,rgba(251,146,60,0.22)_0%,rgba(232,93,4,0.12)_22%,rgba(0,0,0,0.06)_60%,rgba(0,0,0,0.00)_100%)]
                                  shadow-[0_18px_60px_rgba(0,0,0,0.08)]"
                     >
-                      <div className="rounded-[27px] workspace-surface overflow-hidden">
-                        <Page
+                      <div className="rounded-[27px] workspace-surface overflow-hidden w-full h-full">
+                        <PdfPage
+                          pdf={pdf}
                           pageNumber={safePage}
-                          width={baseWidth}
-                          renderAnnotationLayer={false}
-                          renderTextLayer={false}
-                          loading={<PageSkeleton width={baseWidth} height={Math.round(baseWidth * 1.414)} />}
+                          width={renderWidth}
+                          enableTextSelection={mode === 'select'}
                         />
                       </div>
                     </motion.div>
-                  </Document>
-                ) : (
-                  <PageSkeleton width={baseWidth} height={pageSkelHeight} />
+                  </div>
                 )}
-              </div>
               <div className="h-8" />
-            </ScrollArea>
+              </ScrollArea>
+            </div>
 
             {/* Page pill */}
             <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2">
@@ -466,6 +696,16 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
             <span className="flex-1 min-w-0 text-[13px] text-zinc-400 truncate px-1 select-none">
               {doc.name}
             </span>
+
+            {/* Interaction mode */}
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <IconButton
+                label={mode === 'pan' ? 'Pan mode (drag)' : 'Select text'}
+                onClick={() => setMode(m => (m === 'pan' ? 'select' : 'pan'))}
+              >
+                {mode === 'pan' ? <Hand size={15} /> : <Type size={15} />}
+              </IconButton>
+            </div>
 
             {/* Zoom + panel toggle */}
             <div className="flex items-center gap-0.5 flex-shrink-0">

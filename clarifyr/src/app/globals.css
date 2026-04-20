@@ -280,6 +280,26 @@
     background-color: rgba(232, 93, 4, 0.32);
   }
 
+  /* Minimal pdf.js text layer styling (for selection) */
+  .pdf-textLayer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 1;
+    line-height: 1;
+  }
+  .pdf-textLayer > span,
+  .pdf-textLayer > br {
+    color: transparent;
+    position: absolute;
+    white-space: pre;
+    transform-origin: 0 0;
+    cursor: text;
+  }
+  .pdf-textLayer ::selection {
+    background: rgba(232, 93, 4, 0.22);
+  }
+
   /* Brand gradient text — for stat numbers, hero accents */
   .text-gradient-brand {
     @apply bg-clip-text text-transparent;

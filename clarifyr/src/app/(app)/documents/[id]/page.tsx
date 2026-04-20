@@ -22,7 +22,7 @@ export default async function DocumentDetailPage({
   return (
     // Negate AppLayout's px-6 py-6 so the viewer is full-bleed
     <div className="-m-6 h-[calc(100%+48px)] flex flex-col overflow-hidden">
-      <PDFViewer doc={viewDoc} />
+      <PDFViewer key={viewDoc.id} doc={viewDoc} />
     </div>
   )
 }
