@@ -38,16 +38,16 @@ export default function DocSenseMetrics() {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      {/* Sticky header — collapse toggle always visible */}
-      <div className="sticky top-0 z-10 bg-white border-b border-zinc-100 px-4 py-3 flex items-center justify-between gap-3">
+      {/* Sticky header — always visible */}
+      <div className="sticky top-0 z-10 bg-white border-b border-zinc-100 px-4 py-2.5 flex items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[13px] font-semibold text-zinc-800 leading-tight">Document Analysis</p>
-          <div className="mt-1 flex items-center gap-1.5">
+          <div className="mt-0.5 flex items-center gap-1.5">
             <span className="relative flex size-1.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" />
             </span>
-            <span className="text-[11px] text-zinc-400">{updatedLabel}</span>
+            <span className="text-[10px] text-zinc-400">{updatedLabel}</span>
           </div>
         </div>
 
@@ -56,10 +56,10 @@ export default function DocSenseMetrics() {
             <TooltipTrigger asChild>
               <button
                 type="button"
-                className="w-7 h-7 rounded-lg hover:bg-zinc-100 transition-colors flex items-center justify-center text-zinc-400 hover:text-zinc-600 flex-shrink-0"
-                aria-label={open ? 'Collapse metrics' : 'Expand metrics'}
+                className="w-6 h-6 rounded-md hover:bg-zinc-100 transition-colors flex items-center justify-center text-zinc-400 hover:text-zinc-600 flex-shrink-0"
+                aria-label={open ? 'Collapse' : 'Expand'}
               >
-                <ChevronDown className={cn('transition-transform duration-200', open ? 'rotate-0' : '-rotate-90')} size={15} />
+                <ChevronDown className={cn('transition-transform duration-200', open ? 'rotate-0' : '-rotate-90')} size={13} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="left">{open ? 'Collapse' : 'Expand'}</TooltipContent>
@@ -68,9 +68,9 @@ export default function DocSenseMetrics() {
       </div>
 
       <CollapsibleContent>
-        <div className="px-4 pt-3 pb-4">
+        <div className="px-3 pt-2.5 pb-3">
           <motion.div
-            className="grid grid-cols-2 gap-2"
+            className="grid grid-cols-2 gap-1.5"
             initial="hidden"
             animate="show"
             variants={{
@@ -84,14 +84,14 @@ export default function DocSenseMetrics() {
                 <motion.div
                   key={m.label}
                   variants={{
-                    hidden: { opacity: 0, y: 6 },
+                    hidden: { opacity: 0, y: 4 },
                     show: { opacity: 1, y: 0 },
                   }}
-                  className={cn('rounded-xl p-3 flex flex-col gap-0.5', cls.box)}
+                  className={cn('rounded-lg p-2.5 flex flex-col', cls.box)}
                 >
-                  <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">{m.label}</span>
-                  <span className={cn('text-2xl font-bold leading-none mt-0.5', cls.value)}>{m.value}</span>
-                  <span className="text-[11px] text-zinc-400 mt-0.5">{m.sub}</span>
+                  <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-widest leading-none">{m.label}</span>
+                  <span className={cn('text-[22px] font-bold leading-none mt-1.5', cls.value)}>{m.value}</span>
+                  <span className="text-[10px] text-zinc-400 mt-0.5">{m.sub}</span>
                 </motion.div>
               )
             })}
@@ -99,11 +99,11 @@ export default function DocSenseMetrics() {
 
           <button
             type="button"
-            className="w-full mt-3 h-9 text-[13px] font-medium text-brand border border-brand/25
-                       rounded-xl hover:bg-brand/5 hover:border-brand/40 transition-colors
+            className="w-full mt-2.5 h-8 text-[12px] font-medium text-brand border border-brand/25
+                       rounded-lg hover:bg-brand/5 hover:border-brand/40 transition-colors
                        flex items-center justify-center gap-1.5"
           >
-            <BarChart2 size={13} />
+            <BarChart2 size={12} />
             View Full Report
           </button>
         </div>

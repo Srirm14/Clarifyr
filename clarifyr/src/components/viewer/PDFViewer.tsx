@@ -125,29 +125,25 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
       <div className="w-full h-full min-h-0 flex overflow-hidden bg-zinc-100">
 
         {/* ── Thumbnail strip ──────────────────────────────────────── */}
-        <div className="w-[86px] flex-shrink-0 bg-white border-r border-zinc-200 h-full flex flex-col">
-          <div className="h-11 flex items-center px-3 border-b border-zinc-100 flex-shrink-0">
-            <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">Pages</span>
+        <div className="w-[80px] flex-shrink-0 bg-white border-r border-zinc-200 h-full flex flex-col">
+          <div className="h-9 flex items-center px-3 border-b border-zinc-100 flex-shrink-0">
+            <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-widest">Pages</span>
           </div>
 
           <ScrollArea className="flex-1 min-h-0">
-            <div className="p-2 flex flex-col gap-1.5">
-              {/* Single Document loads PDF once for all thumbnails */}
+            <div className="px-2 py-2 flex flex-col gap-2">
               <Document
                 file={doc.fileUrl}
                 loading={
-                  // Show 3 placeholder skeletons while PDF parses
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-2">
                     {[0, 1, 2].map(i => (
-                      <div key={i} className="rounded-lg border border-zinc-200 overflow-hidden bg-white">
-                        <div className="p-1">
-                          <div
-                            className="rounded-sm bg-zinc-100 animate-pulse"
-                            style={{ width: THUMB_W, height: THUMB_H }}
-                          />
-                        </div>
-                        <div className="pb-1.5 flex justify-center">
-                          <div className="h-2 w-3 rounded bg-zinc-100 animate-pulse" />
+                      <div key={i} className="rounded-md overflow-hidden">
+                        <div
+                          className="rounded-md bg-zinc-100 animate-pulse"
+                          style={{ width: THUMB_W, height: THUMB_H }}
+                        />
+                        <div className="mt-1 flex justify-center">
+                          <div className="h-1.5 w-4 rounded bg-zinc-100 animate-pulse" />
                         </div>
                       </div>
                     ))}
@@ -165,44 +161,46 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                         type="button"
                         onClick={() => setPage(p)}
                         className={cn(
-                          'relative w-full rounded-lg border bg-white transition-all overflow-hidden mb-1.5 last:mb-0',
-                          active
-                            ? 'border-brand/40 shadow-[0_0_0_2px_rgba(232,93,4,0.12)]'
-                            : 'border-zinc-200 hover:border-zinc-300 hover:shadow-sm',
+                          'relative w-full rounded-md transition-all overflow-hidden group',
+                          active ? 'ring-1 ring-brand/50' : 'hover:ring-1 hover:ring-zinc-300',
                         )}
                         aria-label={`Go to page ${p}`}
                       >
+                        {/* Left accent bar for active */}
                         {active && (
                           <motion.div
-                            layoutId="thumb-glow"
-                            className="absolute inset-0 rounded-lg bg-brand/5 pointer-events-none"
+                            layoutId="thumb-bar"
+                            className="absolute left-0 top-1 bottom-1 w-[2px] rounded-full bg-brand"
                           />
                         )}
-                        <div className="p-1">
-                          <div className="rounded-sm overflow-hidden bg-white">
-                            <Page
-                              pageNumber={p}
-                              width={THUMB_W}
-                              renderAnnotationLayer={false}
-                              renderTextLayer={false}
-                              loading={
-                                <div
-                                  className="bg-zinc-100 animate-pulse rounded-sm"
-                                  style={{ width: THUMB_W, height: THUMB_H }}
-                                />
-                              }
-                            />
+                        <div className={cn(
+                          'rounded-md overflow-hidden transition-colors',
+                          active ? 'bg-brand/5' : 'bg-zinc-50 group-hover:bg-zinc-100/60',
+                        )}>
+                          <div className="p-0.5">
+                            <div className="rounded-sm overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+                              <Page
+                                pageNumber={p}
+                                width={THUMB_W}
+                                renderAnnotationLayer={false}
+                                renderTextLayer={false}
+                                loading={
+                                  <div
+                                    className="bg-zinc-100 animate-pulse"
+                                    style={{ width: THUMB_W, height: THUMB_H }}
+                                  />
+                                }
+                              />
+                            </div>
                           </div>
-                        </div>
-                        <div className="pb-1.5 text-center">
-                          <span
-                            className={cn(
-                              'text-[10px] tabular-nums font-medium',
+                          <div className="py-1 text-center">
+                            <span className={cn(
+                              'text-[9px] tabular-nums font-semibold',
                               active ? 'text-brand' : 'text-zinc-400',
-                            )}
-                          >
-                            {p}
-                          </span>
+                            )}>
+                              {p}
+                            </span>
+                          </div>
                         </div>
                       </button>
                     )

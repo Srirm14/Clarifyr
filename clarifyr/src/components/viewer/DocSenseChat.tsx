@@ -66,12 +66,12 @@ export default function DocSenseChat() {
 
   const emptyState = useMemo(
     () => (
-      <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
-        <div className="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center">
-          <Sparkles size={16} className="text-brand" />
+      <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-5 py-4">
+        <div className="w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center">
+          <Sparkles size={13} className="text-brand" />
         </div>
-        <p className="text-xs text-zinc-500 leading-relaxed">
-          Ask me anything about this document — clauses, risks, obligations, or comparisons.
+        <p className="text-[12px] text-zinc-400 leading-relaxed max-w-[200px]">
+          Ask me anything about this document — clauses, risks, or obligations.
         </p>
       </div>
     ),
@@ -111,9 +111,9 @@ export default function DocSenseChat() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="flex items-center gap-2 px-3 py-2.5 border-t border-zinc-100">
-        <MessageSquare size={14} className="text-zinc-500" />
-        <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wide">Ask DocSense</span>
+      <div className="flex items-center gap-2 px-4 py-2 border-t border-zinc-100">
+        <MessageSquare size={12} className="text-zinc-400" />
+        <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">Ask DocSense</span>
       </div>
 
       <ScrollArea className="flex-1 min-h-0">
@@ -166,19 +166,19 @@ export default function DocSenseChat() {
         </div>
       </ScrollArea>
 
-      <div className="flex-shrink-0 border-t border-zinc-100 p-2.5">
+      <div className="flex-shrink-0 border-t border-zinc-100 px-3 py-2.5">
         <div
           className="flex items-end gap-2 bg-zinc-50 rounded-xl border border-zinc-200
                      focus-within:border-brand/50 focus-within:ring-2 focus-within:ring-brand/10
-                     transition-all px-3 py-2"
+                     transition-all px-2.5 py-1.5"
         >
           <textarea
             rows={1}
             value={input}
             placeholder="Ask about this document..."
-            className="flex-1 resize-none bg-transparent text-xs text-zinc-800
+            className="flex-1 resize-none bg-transparent text-[12px] text-zinc-800
                        placeholder:text-zinc-400 outline-none leading-relaxed
-                       max-h-24 overflow-y-auto"
+                       max-h-20 overflow-y-auto"
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -191,15 +191,15 @@ export default function DocSenseChat() {
             type="button"
             onClick={handleSend}
             disabled={!canSend}
-            className="w-7 h-7 rounded-lg bg-brand text-white flex items-center justify-center
-                       hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed
+            className="w-6 h-6 rounded-lg bg-brand text-white flex items-center justify-center
+                       hover:bg-brand/90 disabled:opacity-30 disabled:cursor-not-allowed
                        transition-all flex-shrink-0"
             aria-label="Send"
           >
-            <ArrowUp size={14} />
+            <ArrowUp size={12} />
           </button>
         </div>
-        <p className="text-[10px] text-zinc-400 mt-1.5 px-1">Shift+Enter for new line · Enter to send</p>
+        <p className="text-[9px] text-zinc-400 mt-1 px-0.5">Shift+Enter for new line · Enter to send</p>
       </div>
     </div>
   )
