@@ -6,10 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft,
   ChevronRight,
-  PanelRightOpen,
   ZoomIn,
   ZoomOut,
   FileWarning,
+  Sparkles,
 } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
-const ZOOMS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0] as const
+const ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 // Thumbnail dimensions — A4 ratio (1:√2), computed once
 const THUMB_W = 64
 const THUMB_H = Math.round(THUMB_W * 1.414) // 90px
@@ -29,13 +29,11 @@ function IconButton({
   label,
   onClick,
   disabled,
-  active,
   children,
 }: Readonly<{
   label: string
   onClick?: () => void
   disabled?: boolean
-  active?: boolean
   children: React.ReactNode
 }>) {
   return (
@@ -49,9 +47,7 @@ function IconButton({
             'w-8 h-8 rounded-lg transition-colors flex items-center justify-center',
             disabled
               ? 'text-zinc-300 cursor-not-allowed'
-              : active
-                ? 'text-brand bg-brand/8'
-                : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100',
+              : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100',
           )}
           aria-label={label}
         >
@@ -108,7 +104,7 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
     return () => ro.disconnect()
   }, [])
 
-  const zoom = ZOOMS[zoomIdx] ?? 1.0
+  const zoom = ZOOMS[zoomIdx] ?? 1
   const zoomPct = useMemo(() => `${Math.round(zoom * 100)}%`, [zoom])
   const pageCount = Math.max(1, numPages)
   // Clamp page to valid range — read-time derivation avoids setState-in-effect
@@ -218,12 +214,32 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
 
         {/* ── Main canvas ──────────────────────────────────────────── */}
         <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-          <div ref={canvasRef} className="flex-1 min-h-0 overflow-hidden bg-zinc-100">
+          <div ref={canvasRef} className="relative flex-1 min-h-0 overflow-hidden bg-zinc-100">
+            {/* Floating Analyze toggle */}
+            <div className="absolute top-4 right-4 z-10">
+              <AnimatePresence mode="wait">
+                {showPanel ? null : (
+                  <motion.button
+                    key="open"
+                    initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                    transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
+                    onClick={() => setShowPanel(true)}
+                    className="flex items-center gap-1.5 h-8 pl-2.5 pr-3 rounded-full
+                               bg-white/90 backdrop-blur-sm border border-zinc-200
+                               shadow-sm hover:shadow-md hover:border-brand/40 hover:bg-brand/5
+                               text-zinc-600 hover:text-brand transition-all"
+                  >
+                    <Sparkles size={13} className="text-brand flex-shrink-0" />
+                    <span className="text-[12px] font-semibold tracking-tight">Analyze</span>
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
             <ScrollArea className="h-full">
               <div className="py-6 flex justify-center">
-                {!thumbsReady ? (
-                  <PageSkeleton width={baseWidth} height={pageSkelHeight} />
-                ) : (
+                {thumbsReady ? (
                   <Document
                     file={doc.fileUrl}
                     loading={<PageSkeleton width={baseWidth} height={pageSkelHeight} />}
@@ -242,6 +258,8 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                       />
                     </div>
                   </Document>
+                ) : (
+                  <PageSkeleton width={baseWidth} height={pageSkelHeight} />
                 )}
               </div>
               <div className="h-8" />
@@ -294,14 +312,6 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                 disabled={zoomIdx === ZOOMS.length - 1}
               >
                 <ZoomIn size={15} />
-              </IconButton>
-              <Separator orientation="vertical" className="h-5 mx-2" />
-              <IconButton
-                label={showPanel ? 'Hide DocSense' : 'Show DocSense'}
-                onClick={() => setShowPanel(v => !v)}
-                active={showPanel}
-              >
-                <PanelRightOpen size={15} />
               </IconButton>
             </div>
           </div>
