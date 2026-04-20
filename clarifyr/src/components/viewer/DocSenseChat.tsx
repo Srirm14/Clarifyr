@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowUp, MessageSquare, Sparkles } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
@@ -23,14 +23,12 @@ function streamAssistantMessage(args: {
 }) {
   const { reply, id, createdAt, onChunk, onDone } = args
   let idx = 0
-
   const tick = () => {
     idx += Math.max(2, Math.round(reply.length / 28))
     onChunk(reply.slice(0, idx))
     if (idx < reply.length) globalThis.setTimeout(tick, 40)
     else onDone()
   }
-
   tick()
   return { id, createdAt }
 }
@@ -48,15 +46,28 @@ function upsertAssistantMessage(
 
 function TypingDots() {
   return (
-    <div className="flex items-center gap-1 px-3 py-2">
-      <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.2s]" />
-      <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.1s]" />
-      <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" />
+    <div className="flex items-start gap-2 px-1">
+      <div className="w-5 h-5 rounded-full bg-brand-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Sparkles size={10} className="text-brand" />
+      </div>
+      <div className="workspace-surface rounded-2xl rounded-tl-sm px-3 py-2.5">
+        <div className="flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.2s]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.1s]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" />
+        </div>
+      </div>
     </div>
   )
 }
 
-export default function DocSenseChat() {
+export default function DocSenseChat({
+  docName,
+  suggestedPrompts = ['What are the key risks?', 'Summarise the obligations', 'What should I negotiate first?'],
+}: Readonly<{
+  docName: string
+  suggestedPrompts?: string[]
+}>) {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isTyping, setIsTyping] = useState(false)
@@ -66,16 +77,34 @@ export default function DocSenseChat() {
 
   const emptyState = useMemo(
     () => (
-      <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-5 py-4">
-        <div className="w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center">
-          <Sparkles size={13} className="text-brand" />
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6 py-8">
+        <div className="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center opacity-70">
+          <Sparkles size={18} className="text-brand" />
         </div>
-        <p className="text-[12px] text-zinc-400 leading-relaxed max-w-[200px]">
-          Ask me anything about this document — clauses, risks, or obligations.
-        </p>
+        <div>
+          <p className="text-[12px] font-medium text-zinc-600 leading-relaxed">Ask about this document</p>
+          <p className="text-[11px] text-zinc-400 leading-relaxed mt-0.5 max-w-[180px]">
+            I’m ready to answer questions about clauses, risks, and negotiation points.
+          </p>
+          <p className="text-[10px] text-zinc-400 mt-2 max-w-[220px] truncate">
+            {docName}
+          </p>
+        </div>
+        <div className="flex flex-col gap-1.5 w-full max-w-[200px]">
+          {suggestedPrompts.map(hint => (
+            <button
+              key={hint}
+              type="button"
+              onClick={() => setInput(hint)}
+              className="text-[11px] text-zinc-500 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-lg px-3 py-1.5 transition-colors text-left truncate"
+            >
+              {hint}
+            </button>
+          ))}
+        </div>
       </div>
     ),
-    [],
+    [docName, suggestedPrompts],
   )
 
   useEffect(() => {
@@ -86,8 +115,6 @@ export default function DocSenseChat() {
     const reply = MOCK_REPLIES[Math.floor(Math.random() * MOCK_REPLIES.length)] ?? MOCK_REPLIES[0]
     const id = crypto.randomUUID()
     const createdAt = Date.now()
-
-    // Simulated "streaming" effect
     setIsTyping(true)
     globalThis.setTimeout(() => {
       setIsTyping(false)
@@ -105,7 +132,10 @@ export default function DocSenseChat() {
     const text = input.trim()
     if (!text || isTyping) return
     setInput('')
-    setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'user', content: text, createdAt: Date.now() }])
+    setMessages(prev => [
+      ...prev,
+      { id: crypto.randomUUID(), role: 'user', content: text, createdAt: Date.now() },
+    ])
     pushAssistantReply()
   }
 
@@ -117,7 +147,7 @@ export default function DocSenseChat() {
       </div>
 
       <ScrollArea className="flex-1 min-h-0">
-        <div className="px-3 py-2 flex flex-col gap-2.5 min-h-full">
+        <div className="px-3 py-2 flex flex-col gap-3 min-h-full">
           {messages.length === 0 && !isTyping ? (
             emptyState
           ) : (
@@ -129,24 +159,25 @@ export default function DocSenseChat() {
                     key={m.id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                     className={cn('flex flex-col gap-1', isUser ? 'items-end' : 'items-start')}
                   >
-                    <div
-                      className={cn(
-                        'max-w-[220px] px-3 py-2 text-xs leading-relaxed',
-                        isUser
-                          ? 'bg-brand text-white rounded-2xl rounded-br-sm'
-                          : 'bg-zinc-100 text-zinc-800 rounded-2xl rounded-bl-sm',
-                      )}
-                    >
-                      {isUser ? (
-                        m.content
-                      ) : (
-                        <div className="prose prose-xs prose-zinc max-w-none">
-                          <ReactMarkdown>{m.content}</ReactMarkdown>
+                    {isUser ? (
+                      <div className="max-w-[220px] px-3 py-2 text-xs leading-relaxed bg-brand text-white rounded-2xl rounded-br-sm">
+                        {m.content}
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-2 max-w-[240px]">
+                        <div className="w-5 h-5 rounded-full bg-brand-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Sparkles size={10} className="text-brand" />
                         </div>
-                      )}
-                    </div>
+                        <div className="workspace-surface rounded-2xl rounded-tl-sm px-3 py-2 text-xs leading-relaxed text-zinc-800">
+                          <div className="prose prose-xs prose-zinc max-w-none">
+                            <ReactMarkdown>{m.content}</ReactMarkdown>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <span className="text-[10px] text-zinc-400 tabular-nums">
                       {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
@@ -154,10 +185,12 @@ export default function DocSenseChat() {
                 )
               })}
               {isTyping && (
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex items-start">
-                  <div className="bg-zinc-100 text-zinc-800 rounded-2xl rounded-bl-sm">
-                    <TypingDots />
-                  </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <TypingDots />
                 </motion.div>
               )}
               <div ref={bottomRef} />
@@ -168,17 +201,17 @@ export default function DocSenseChat() {
 
       <div className="flex-shrink-0 border-t border-zinc-100 px-3 py-2.5">
         <div
-          className="flex items-end gap-2 bg-zinc-50 rounded-xl border border-zinc-200
-                     focus-within:border-brand/50 focus-within:ring-2 focus-within:ring-brand/10
-                     transition-all px-2.5 py-1.5"
+          className={cn(
+            'flex items-end gap-2 bg-zinc-50 rounded-xl border border-zinc-200 px-2.5 py-1.5',
+            'transition-all duration-200',
+            'focus-within:border-brand/40 focus-within:ring-[3px] focus-within:ring-[#FED7AA]',
+          )}
         >
           <textarea
             rows={1}
             value={input}
             placeholder="Ask about this document..."
-            className="flex-1 resize-none bg-transparent text-[12px] text-zinc-800
-                       placeholder:text-zinc-400 outline-none leading-relaxed
-                       max-h-20 overflow-y-auto"
+            className="flex-1 resize-none bg-transparent text-[12px] text-zinc-800 placeholder:text-zinc-400 outline-none leading-relaxed max-h-20 overflow-y-auto"
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -187,21 +220,26 @@ export default function DocSenseChat() {
               }
             }}
           />
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={!canSend}
-            className="w-6 h-6 rounded-lg bg-brand text-white flex items-center justify-center
-                       hover:bg-brand/90 disabled:opacity-30 disabled:cursor-not-allowed
-                       transition-all flex-shrink-0"
-            aria-label="Send"
-          >
-            <ArrowUp size={12} />
-          </button>
+          <AnimatePresence>
+            {canSend && (
+              <motion.button
+                key="send"
+                type="button"
+                initial={{ opacity: 0, x: 8, scale: 0.8 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 8, scale: 0.8 }}
+                transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
+                onClick={handleSend}
+                className="w-6 h-6 rounded-lg bg-brand text-white flex items-center justify-center hover:bg-brand-dark transition-colors flex-shrink-0"
+                aria-label="Send"
+              >
+                <ArrowUp size={12} />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
         <p className="text-[9px] text-zinc-400 mt-1 px-0.5">Shift+Enter for new line · Enter to send</p>
       </div>
     </div>
   )
 }
-

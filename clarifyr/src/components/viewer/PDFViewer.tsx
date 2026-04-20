@@ -25,6 +25,137 @@ const ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const
 const THUMB_W = 64
 const THUMB_H = Math.round(THUMB_W * 1.414) // 90px
 
+function AnalyzeBookmark({
+  onClick,
+}: Readonly<{
+  onClick: () => void
+}>) {
+  const [hover, setHover] = useState(false)
+
+  return (
+    <div className="absolute top-6 right-0 z-10">
+      <motion.button
+        type="button"
+        initial={{ opacity: 0, scale: 0.9, y: -4 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: -4 }}
+        transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
+        onClick={onClick}
+        onHoverStart={() => setHover(true)}
+        onHoverEnd={() => setHover(false)}
+        whileHover={{ y: -1, scale: 1.008 }}
+        whileTap={{ scale: 0.995 }}
+        className={cn(
+          'relative group h-10 px-4 pr-3 flex items-center gap-2 select-none',
+          'text-zinc-950',
+          'focus-visible:outline-none',
+        )}
+        style={{
+          // Directional bookmark/tab silhouette (points into the document stage)
+          clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+        }}
+        aria-label="Open DocSense panel"
+      >
+        {/* Border layer */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-brand/35"
+          style={{
+            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+          }}
+        />
+
+        {/* Ambient hover bloom (very soft, controlled) */}
+        <motion.div
+          aria-hidden
+          className="absolute -inset-8 blur-3xl"
+          style={{
+            background:
+              'radial-gradient(closest-side, rgba(251,146,60,0.16), transparent 72%)',
+          }}
+          animate={{ opacity: hover ? 1 : 0 }}
+          transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
+        />
+
+        {/* Fill layer (refined orange material + gentle drift on hover) */}
+        <motion.div
+          aria-hidden
+          className="absolute inset-px backdrop-blur-sm"
+          style={{
+            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+            background:
+              // Material base: warm tonal blend
+              'linear-gradient(120deg, rgba(255,237,213,0.94) 0%, rgba(253,186,116,0.70) 28%, rgba(251,146,60,0.58) 52%, rgba(232,93,4,0.62) 74%, rgba(154,52,18,0.46) 100%),' +
+              // Soft apricot highlight near leading edge
+              'radial-gradient(260px 80px at 18% 22%, rgba(255,255,255,0.42), transparent 62%),' +
+              // Depth vignette on the far edge
+              'radial-gradient(220px 90px at 92% 58%, rgba(154,52,18,0.22), transparent 68%)',
+            backgroundSize: '260% 100%, 100% 100%, 100% 100%',
+            backgroundPosition: '18% 50%, 0% 0%, 0% 0%',
+          }}
+          animate={{
+            backgroundPosition: hover ? ['18% 50%, 0% 0%, 0% 0%', '82% 50%, 0% 0%, 0% 0%'] : '18% 50%, 0% 0%, 0% 0%',
+          }}
+          transition={
+            hover
+              ? { duration: 3.2, ease: [0.25, 0.1, 0.25, 1], repeat: Infinity, repeatType: 'mirror' }
+              : { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
+          }
+        />
+
+        {/* Inset highlight / top-edge sheen */}
+        <div
+          aria-hidden
+          className="absolute inset-px opacity-65"
+          style={{
+            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+            background:
+              'linear-gradient(to bottom, rgba(255,255,255,0.40), transparent 48%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Specular highlight (moves subtly on hover) */}
+        <motion.div
+          aria-hidden
+          className="absolute top-0 left-0 right-0 h-6 opacity-40"
+          style={{
+            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+            background:
+              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 40%, transparent 78%)',
+            filter: 'blur(0.2px)',
+          }}
+          animate={{ x: hover ? [0, 10, 0] : 0, opacity: hover ? 0.55 : 0.4 }}
+          transition={
+            hover
+              ? { duration: 2.8, ease: [0.25, 0.1, 0.25, 1], repeat: Infinity, repeatType: 'mirror' }
+              : { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }
+          }
+        />
+
+        {/* Elevation */}
+        <motion.div
+          aria-hidden
+          className="absolute inset-0"
+          animate={{
+            boxShadow: hover
+              ? '0 18px 46px rgba(0,0,0,0.12), 0 14px 30px rgba(232,93,4,0.09), inset 0 1px 0 rgba(255,255,255,0.28)'
+              : '0 12px 34px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.22)',
+          }}
+          transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
+          style={{
+            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+          }}
+        />
+
+        {/* Content */}
+        <Sparkles size={13} className="text-[#7C2D12] flex-shrink-0 relative z-10" />
+        <span className="text-[12px] font-semibold tracking-tight relative z-10">Analyze</span>
+      </motion.button>
+    </div>
+  )
+}
+
 function IconButton({
   label,
   onClick,
@@ -86,8 +217,9 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
   const [numPages, setNumPages] = useState(0)
   const [page, setPage] = useState(1)
   const [zoomIdx, setZoomIdx] = useState(2) // default 1.0×
-  const [showPanel, setShowPanel] = useState(true)
+  const [showPanel, setShowPanel] = useState(false)
   const [thumbsReady, setThumbsReady] = useState(false)
+  const [flashPage, setFlashPage] = useState<number | null>(null)
 
   // Measure the main canvas container to compute responsive page width
   const canvasRef = useRef<HTMLDivElement>(null)
@@ -112,7 +244,6 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
 
   // Base page width fills available canvas width (minus 96px padding), max 780px
   const baseWidth = Math.min(Math.max(400, canvasWidth - 96), 780)
-  const pageWidth = Math.round(baseWidth * zoom)
   const pageSkelHeight = Math.round(baseWidth * 1.414) // A4 aspect at base width
 
   const handleLoad = useCallback(({ numPages: n }: { numPages: number }) => {
@@ -120,18 +251,30 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
     setThumbsReady(true)
   }, [])
 
+  const jumpToPage = useCallback((p: number) => {
+    setPage(Math.min(pageCount, Math.max(1, p)))
+    setFlashPage(p)
+  }, [pageCount])
+
+  useEffect(() => {
+    if (!flashPage) return
+    const id = globalThis.setTimeout(() => setFlashPage(null), 700)
+    return () => globalThis.clearTimeout(id)
+  }, [flashPage])
+
   return (
     <TooltipProvider>
-      <div className="w-full h-full min-h-0 flex overflow-hidden bg-zinc-100">
+      <div className="w-full h-full min-h-0 flex overflow-hidden workspace-canvas workspace-warm-wash">
 
         {/* ── Thumbnail strip ──────────────────────────────────────── */}
-        <div className="w-[80px] flex-shrink-0 bg-white border-r border-zinc-200 h-full flex flex-col">
-          <div className="h-9 flex items-center px-3 border-b border-zinc-100 flex-shrink-0">
+        <div className="w-[130px] flex-shrink-0 h-full flex flex-col px-3 py-3">
+          <div className="workspace-panel rounded-xl overflow-hidden flex flex-col h-full">
+          <div className="h-10 flex items-center px-4 border-b border-zinc-100 flex-shrink-0">
             <span className="text-[9px] font-semibold text-zinc-400 uppercase tracking-widest">Pages</span>
           </div>
 
           <ScrollArea className="flex-1 min-h-0">
-            <div className="px-2 py-2 flex flex-col gap-2">
+            <div className="px-3 py-3 flex flex-col gap-3">
               <Document
                 file={doc.fileUrl}
                 loading={
@@ -155,14 +298,19 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                 {thumbsReady &&
                   Array.from({ length: pageCount }, (_, i) => i + 1).map(p => {
                     const active = p === safePage
+                    const flashing = flashPage === p
                     return (
-                      <button
+                      <motion.button
                         key={p}
                         type="button"
                         onClick={() => setPage(p)}
+                        whileTap={{ scale: 0.98 }}
+                        animate={{ scale: active ? 1.03 : 1 }}
                         className={cn(
-                          'relative w-full rounded-md transition-all overflow-hidden group',
-                          active ? 'ring-1 ring-brand/50' : 'hover:ring-1 hover:ring-zinc-300',
+                          'relative w-full rounded-lg transition-all overflow-hidden group',
+                          'workspace-surface',
+                          active ? 'workspace-selected bg-brand-50/20' : 'hover:border-zinc-300',
+                          flashing && 'ring-1 ring-brand/20',
                         )}
                         aria-label={`Go to page ${p}`}
                       >
@@ -170,15 +318,12 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                         {active && (
                           <motion.div
                             layoutId="thumb-bar"
-                            className="absolute left-0 top-1 bottom-1 w-[2px] rounded-full bg-brand"
+                            className="absolute left-0 top-3 bottom-8 w-[2px] rounded-full bg-brand"
                           />
                         )}
-                        <div className={cn(
-                          'rounded-md overflow-hidden transition-colors',
-                          active ? 'bg-brand/5' : 'bg-zinc-50 group-hover:bg-zinc-100/60',
-                        )}>
-                          <div className="p-0.5">
-                            <div className="rounded-sm overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+                        <div className="flex flex-col items-center">
+                          <div className="w-full px-2 pt-2 pb-1.5">
+                            <div className="rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)] bg-white">
                               <Page
                                 pageNumber={p}
                                 width={THUMB_W}
@@ -193,49 +338,40 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                               />
                             </div>
                           </div>
-                          <div className="py-1 text-center">
+
+                          {/* Fixed footer slot for page number (locks alignment) */}
+                          <div className={cn(
+                            'w-full h-7 flex items-center justify-center border-t border-zinc-100/80',
+                            active ? 'bg-brand-50/25' : 'bg-white/40',
+                          )}>
                             <span className={cn(
-                              'text-[9px] tabular-nums font-semibold',
-                              active ? 'text-brand' : 'text-zinc-400',
+                              'text-[9px] tabular-nums font-semibold tracking-wide',
+                              active ? 'text-[#9A3412]' : 'text-zinc-400',
                             )}>
                               {p}
                             </span>
                           </div>
                         </div>
-                      </button>
+                      </motion.button>
                     )
                   })}
               </Document>
             </div>
           </ScrollArea>
+          </div>
         </div>
 
         {/* ── Main canvas ──────────────────────────────────────────── */}
         <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-          <div ref={canvasRef} className="relative flex-1 min-h-0 overflow-hidden bg-zinc-100">
-            {/* Floating Analyze toggle */}
-            <div className="absolute top-4 right-4 z-10">
-              <AnimatePresence mode="wait">
-                {showPanel ? null : (
-                  <motion.button
-                    key="open"
-                    initial={{ opacity: 0, scale: 0.9, y: -4 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: -4 }}
-                    transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-                    onClick={() => setShowPanel(true)}
-                    className="flex items-center gap-1.5 h-8 pl-2.5 pr-3 rounded-full
-                               bg-white/90 backdrop-blur-sm border border-zinc-200
-                               shadow-sm hover:shadow-md hover:border-brand/40 hover:bg-brand/5
-                               text-zinc-600 hover:text-brand transition-all"
-                  >
-                    <Sparkles size={13} className="text-brand flex-shrink-0" />
-                    <span className="text-[12px] font-semibold tracking-tight">Analyze</span>
-                  </motion.button>
-                )}
-              </AnimatePresence>
-            </div>
-            <ScrollArea className="h-full">
+          <div ref={canvasRef} className="relative flex-1 min-h-0 overflow-hidden workspace-canvas">
+            {/* Bookmark-style Analyze toggle */}
+            <AnimatePresence mode="wait">
+              {showPanel ? null : <AnalyzeBookmark onClick={() => setShowPanel(true)} />}
+            </AnimatePresence>
+            {/* Inner shadow makes it feel like paper in a tray */}
+            <div className="absolute inset-0 pointer-events-none shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-10px_24px_rgba(0,0,0,0.08)]" />
+
+            <ScrollArea className="h-full relative">
               <div className="py-6 flex justify-center">
                 {thumbsReady ? (
                   <Document
@@ -246,15 +382,20 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                     }
                     onLoadSuccess={handleLoad}
                   >
-                    <div className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.07)] ring-1 ring-zinc-200/80 overflow-hidden">
+                    <motion.div
+                      animate={{ scale: zoom }}
+                      transition={{ type: 'spring', stiffness: 220, damping: 26 }}
+                      style={{ transformOrigin: 'top center' }}
+                      className="workspace-surface rounded-3xl overflow-hidden shadow-[0_18px_60px_rgba(0,0,0,0.08)]"
+                    >
                       <Page
                         pageNumber={safePage}
-                        width={pageWidth}
+                        width={baseWidth}
                         renderAnnotationLayer={false}
                         renderTextLayer={false}
-                        loading={<PageSkeleton width={pageWidth} height={Math.round(pageWidth * 1.414)} />}
+                        loading={<PageSkeleton width={baseWidth} height={Math.round(baseWidth * 1.414)} />}
                       />
-                    </div>
+                    </motion.div>
                   </Document>
                 ) : (
                   <PageSkeleton width={baseWidth} height={pageSkelHeight} />
@@ -262,10 +403,20 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
               </div>
               <div className="h-8" />
             </ScrollArea>
+
+            {/* Page pill */}
+            <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2">
+              <div className="px-3 py-1 rounded-full workspace-panel border-zinc-200/70">
+                <span className="text-[11px] font-medium text-zinc-600 tabular-nums">
+                  {safePage} / {pageCount}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* ── Bottom toolbar ─────────────────────────────────────── */}
-          <div className="bg-white border-t border-zinc-200 flex items-center px-3 h-11 flex-shrink-0 gap-2">
+          <div className="workspace-canvas flex items-center px-4 h-16 flex-shrink-0">
+            <div className="w-full h-11 rounded-2xl workspace-panel flex items-center px-3 gap-2 border-zinc-200/70">
             {/* Page nav */}
             <div className="flex items-center gap-0.5 flex-shrink-0">
               <IconButton
@@ -312,12 +463,20 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                 <ZoomIn size={15} />
               </IconButton>
             </div>
+            </div>
           </div>
         </div>
 
         {/* ── Right panel ──────────────────────────────────────────── */}
         <AnimatePresence>
-          {showPanel && <DocSensePanel onClose={() => setShowPanel(false)} />}
+          {showPanel && (
+            <DocSensePanel
+              key={doc.id}
+              doc={doc}
+              onJumpToPage={jumpToPage}
+              onClose={() => setShowPanel(false)}
+            />
+          )}
         </AnimatePresence>
       </div>
     </TooltipProvider>
