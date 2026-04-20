@@ -14,6 +14,8 @@ import { Separator } from '@/components/ui/separator'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AuthModalProps } from '@/types/landing'
+import { useRouter } from 'next/navigation'
+import { DEMO_CREDENTIALS, setDemoSession } from '@/lib/demo-session'
 
 function GoogleButton({ onClick }: Readonly<{ onClick: () => void }>) {
   return (
@@ -61,11 +63,31 @@ function Field({
   )
 }
 
-export default function AuthModal({ open, onClose }: AuthModalProps) {
+export default function AuthModal({ open, onClose }: Readonly<AuthModalProps>) {
   const [tab, setTab] = useState<'signup' | 'login'>('signup')
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [loginError, setLoginError] = useState<string | null>(null)
+  const router = useRouter()
 
   const handleSubmit = (e: { preventDefault(): void }) => e.preventDefault()
   const handleGoogle = () => console.log('Google SSO')
+  const handleDemoLogin = (e: { preventDefault(): void }) => {
+    e.preventDefault()
+    setLoginError(null)
+
+    const email = loginEmail.trim().toLowerCase()
+    const password = loginPassword
+
+    if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
+      setDemoSession(email)
+      onClose()
+      router.push('/app')
+      return
+    }
+
+    setLoginError('Invalid demo credentials. Use test@gmail.com / test123.')
+  }
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
@@ -129,19 +151,70 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
                   </p>
                 </form>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-3.5">
-                  <Field id="login-email"    label="Email"    type="email"    placeholder="jane@company.com" />
-                  <Field
-                    id="login-password"
-                    label="Password"
-                    type="password"
-                    placeholder="Your password"
-                    extra={
+                <form onSubmit={handleDemoLogin} className="space-y-3.5">
+                  <div className="rounded-xl border border-brand-200 bg-brand-50 px-4 py-3">
+                    <p className="text-xs font-semibold text-brand tracking-wide uppercase">Demo credentials</p>
+                    <p className="text-sm text-zinc-700 mt-1">
+                      Email: <span className="font-medium">test@gmail.com</span>
+                      <br />
+                      Password: <span className="font-medium">test123</span>
+                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLoginEmail(DEMO_CREDENTIALS.email)
+                          setLoginPassword(DEMO_CREDENTIALS.password)
+                          setLoginError(null)
+                        }}
+                        className="text-xs font-medium text-brand hover:text-brand-dark transition-colors"
+                      >
+                        Autofill
+                      </button>
+                      <span className="text-xs text-zinc-400">·</span>
+                      <span className="text-xs text-zinc-500">Opens the real app page</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="login-email" className="text-sm font-medium text-zinc-700">
+                        Email
+                      </Label>
+                    </div>
+                    <Input
+                      id="login-email"
+                      type="email"
+                      placeholder="test@gmail.com"
+                      value={loginEmail}
+                      onChange={e => setLoginEmail(e.target.value)}
+                      className="input-base w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="login-password" className="text-sm font-medium text-zinc-700">
+                        Password
+                      </Label>
                       <button type="button" className="text-xs text-brand hover:text-brand-dark transition-colors">
                         Forgot password?
                       </button>
-                    }
-                  />
+                    </div>
+                    <Input
+                      id="login-password"
+                      type="password"
+                      placeholder="test123"
+                      value={loginPassword}
+                      onChange={e => setLoginPassword(e.target.value)}
+                      className="input-base w-full"
+                    />
+                  </div>
+
+                  {loginError && (
+                    <p className="text-xs text-red-600">{loginError}</p>
+                  )}
+
                   <button type="submit" className="btn-primary w-full h-10 mt-1">
                     Log In
                   </button>
