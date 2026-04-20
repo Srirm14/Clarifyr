@@ -38,8 +38,10 @@ export default function HeroReportMock() {
       style={{ transformStyle: 'preserve-3d' }}
       className="will-change-transform"
     >
-      <motion.div variants={mockItem} className="relative rounded-2xl border border-zinc-200/70 overflow-hidden bg-white">
-        {/* Subtle top highlight sweep */}
+      <motion.div
+        variants={mockItem}
+        className="relative rounded-2xl border border-zinc-200/70 overflow-hidden bg-white"
+      >
         <motion.div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-20
@@ -48,7 +50,6 @@ export default function HeroReportMock() {
           transition={{ duration: 5.8, ease: 'easeInOut', repeat: Infinity }}
         />
 
-        {/* Browser chrome */}
         <motion.div
           variants={mockItem}
           className="bg-zinc-50/70 backdrop-blur border-b border-zinc-200/70 h-10 px-4 flex items-center gap-2"
@@ -70,9 +71,9 @@ export default function HeroReportMock() {
               </span>
             </motion.div>
             <motion.p variants={mockItem} className="text-[11px] text-zinc-400 leading-relaxed mt-4">
-              4.2. Receiving Party agrees that it shall not, during the term and for a
-              period of five (5) years thereafter, directly or indirectly, solicit or
-              attempt to solicit any employee, independent contractor, or customer...
+              4.2. Receiving Party agrees that it shall not, during the term and for a period of five (5) years
+              thereafter, directly or indirectly, solicit or attempt to solicit any employee, independent contractor,
+              or customer...
             </motion.p>
 
             <motion.div
@@ -106,10 +107,11 @@ export default function HeroReportMock() {
             </motion.div>
           </motion.div>
 
-          <motion.div variants={mockItem} className="w-52 flex-shrink-0 border-l border-zinc-200/70 bg-zinc-50/70 p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-3">
-              Risk Summary
-            </p>
+          <motion.div
+            variants={mockItem}
+            className="w-52 flex-shrink-0 border-l border-zinc-200/70 bg-zinc-50/70 p-4"
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-3">Risk Summary</p>
             {[
               { label: 'Critical Risks', count: '3', bg: 'bg-red-100', text: 'text-red-600' },
               { label: 'Moderate Risks', count: '2', bg: 'bg-orange-100', text: 'text-orange-600' },
@@ -145,9 +147,7 @@ export default function HeroReportMock() {
             </motion.div>
 
             <div className="mt-5 pt-4 border-t border-zinc-200/70">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">
-                Benchmark
-              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Benchmark</p>
               <p className="text-[11px] text-zinc-500 leading-relaxed">
                 Non-solicit duration is in the <span className="font-semibold text-red-600">top 8%</span> most aggressive
                 of 50k contracts.

@@ -1,130 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { AnimatePresence, motion, type Variants } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ShieldCheck } from 'lucide-react'
 import type { CTAProps } from '@/types/landing'
 import AmbientBackground from '@/components/landing/AmbientBackground'
-import HeroReportMock from '@/components/landing/HeroReportMock'
+import AnimatedHeadline from '@/components/landing/hero/AnimatedHeadline'
+import HeroReportMock from '@/components/landing/hero/HeroReportMock'
+import { HERO_HEADLINES } from '@/components/landing/hero/headlines'
 
-type Seg = { t: string; b: boolean; br?: boolean }
-
-const HEADLINES: Seg[][] = [
-  [
-    { t: 'Every contract ', b: false },
-    { t: 'hides risks.', b: true, br: true },
-    { t: ' We find them in ', b: false },
-    { t: '30 seconds.', b: true },
-  ],
-  [
-    { t: 'Signing blind ', b: false },
-    { t: 'costs money.', b: true, br: true },
-    { t: ' AI analysis ', b: false },
-    { t: 'costs nothing.', b: true },
-  ],
-  [
-    { t: "That NDA you're about to sign? ", b: false, br: true },
-    { t: 'Read it first.', b: true },
-  ],
-  [
-    { t: 'Know your ', b: false },
-    { t: 'leverage', b: true, br: true },
-    { t: ' before you negotiate. ', b: false },
-    { t: "We'll find it.", b: true },
-  ],
-  [
-    { t: 'Legal jargon ', b: true },
-    { t: 'translated into ', b: false, br: true },
-    { t: 'plain English.', b: true },
-    { t: ' Instantly.', b: false },
-  ],
-  [
-    { t: "Your employer's lawyer wrote it. ", b: false, br: true },
-    { t: 'You should understand it.', b: true },
-  ],
-  [
-    { t: '50,000+ contracts analyzed. ', b: false, br: true },
-    { t: "We've seen every trick.", b: true },
-  ],
-  [
-    { t: 'That non-compete? It might be ', b: false },
-    { t: 'unenforceable.', b: true, br: true },
-    { t: " Let's check.", b: false },
-  ],
-  [
-    { t: 'Risky clauses ', b: true },
-    { t: 'flagged. Plain English. ', b: false, br: true },
-    { t: 'Done in 30s.', b: true },
-  ],
-  [
-    { t: 'Upload. Analyze. ', b: false, br: true },
-    { t: 'Negotiate with confidence.', b: true },
-  ],
-]
-
-const container: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.022 } },
-  exit: { opacity: 0, transition: { duration: 0.25, ease: [0.4, 0, 1, 1] } },
-}
-const char: Variants = {
-  hidden: { opacity: 0, y: 10, filter: 'blur(4px)' },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: 'blur(0px)',
-    transition: { duration: 0.2, ease: [0, 0, 0.2, 1] },
-  },
-}
-
-function AnimatedHeadline({ segments }: Readonly<{ segments: Seg[] }>) {
-  const items = segments.flatMap((seg, si) => {
-    const chars = seg.t
-      .split('')
-      .map((ch, ci) => ({ kind: 'ch' as const, ch, b: seg.b, id: `${si}-${ci}` }))
-    return seg.br ? [...chars, { kind: 'br' as const, id: `${si}-br` }] : chars
-  })
-
-  return (
-    <motion.span
-      key={segments.map(s => s.t).join('')}
-      variants={container}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      className="inline"
-    >
-      {items.map(item => {
-        if (item.kind === 'br') {
-          return <br key={item.id} aria-hidden />
-        }
-
-        return (
-          <motion.span
-            key={item.id}
-            variants={char}
-            className={
-              item.b
-                ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 bg-clip-text text-transparent'
-                : 'text-zinc-950'
-            }
-            style={{ display: 'inline', whiteSpace: 'pre' }}
-          >
-            {item.ch}
-          </motion.span>
-        )
-      })}
-    </motion.span>
-  )
-}
-
-export default function Hero({ onCTAClick }: CTAProps) {
+export default function Hero({ onCTAClick }: Readonly<CTAProps>) {
   const [idx, setIdx] = useState(0)
 
   useEffect(() => {
-    const totalChars = HEADLINES[idx].reduce((n, s) => n + s.t.length, 0)
+    const totalChars = HERO_HEADLINES[idx].reduce((n, s) => n + s.t.length, 0)
     const typeDuration = totalChars * 22 + 2600
-    const id = setTimeout(() => setIdx(i => (i + 1) % HEADLINES.length), typeDuration)
+    const id = setTimeout(() => setIdx(i => (i + 1) % HERO_HEADLINES.length), typeDuration)
     return () => clearTimeout(id)
   }, [idx])
 
@@ -162,9 +53,7 @@ export default function Hero({ onCTAClick }: CTAProps) {
             className="text-section md:text-hero font-extrabold text-balance mt-4 max-w-[860px] mx-auto
                        leading-[1.12] md:leading-[1.08] min-h-[2.9em] flex items-center justify-center"
           >
-            <AnimatePresence mode="wait">
-              <AnimatedHeadline key={idx} segments={HEADLINES[idx]} />
-            </AnimatePresence>
+            <AnimatedHeadline key={idx} segments={HERO_HEADLINES[idx]} />
           </motion.h1>
 
           {/* Sub */}
@@ -185,7 +74,7 @@ export default function Hero({ onCTAClick }: CTAProps) {
             transition={{ delay: 0.5 }}
             className="flex gap-1.5 mt-5"
           >
-            {HEADLINES.map((segs, i) => (
+            {HERO_HEADLINES.map((segs, i) => (
               <button
                 key={segs[0].t}
                 onClick={() => setIdx(i)}
