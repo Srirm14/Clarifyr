@@ -26,7 +26,7 @@ export default function SidebarFooterUser() {
             </p>
             <div className="w-full h-1 bg-zinc-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-zinc-800 rounded-full transition-all duration-500"
+                className="h-full bg-brand rounded-full transition-all duration-500"
                 style={{ width: `${pct}%` }}
               />
             </div>

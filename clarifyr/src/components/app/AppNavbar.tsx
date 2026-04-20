@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import {
@@ -11,12 +12,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import useBreadcrumbs from '@/components/app/useBreadcrumbs'
 
-interface AppNavbarProps {
-  breadcrumbs: { label: string; href?: string }[]
-}
-
-export default function AppNavbar({ breadcrumbs }: Readonly<AppNavbarProps>) {
+export default function AppNavbar() {
+  const breadcrumbs = useBreadcrumbs()
   return (
     <header
       className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-zinc-200
@@ -39,13 +38,17 @@ export default function AppNavbar({ breadcrumbs }: Readonly<AppNavbarProps>) {
                     <BreadcrumbPage className="text-[13px] font-medium text-zinc-900">
                       {crumb.label}
                     </BreadcrumbPage>
-                  ) : (
+                  ) : crumb.href ? (
                     <BreadcrumbLink
-                      href={crumb.href ?? '#'}
+                      asChild
                       className="text-[13px] text-zinc-500 hover:text-zinc-900 transition-colors"
                     >
-                      {crumb.label}
+                      <Link href={crumb.href}>{crumb.label}</Link>
                     </BreadcrumbLink>
+                  ) : (
+                    <BreadcrumbPage className="text-[13px] font-medium text-zinc-900">
+                      {crumb.label}
+                    </BreadcrumbPage>
                   )}
                 </BreadcrumbItem>
                 {!isLast && <BreadcrumbSeparator className="text-zinc-300" />}

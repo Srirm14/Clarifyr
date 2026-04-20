@@ -3,12 +3,10 @@
 import AppLayout from '@/components/app/AppLayout'
 import RequireDemoSession from '@/components/app/RequireDemoSession'
 
-export default function FoldersPage() {
+export default function AppGroupLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <RequireDemoSession>
-      <AppLayout breadcrumbs={[{ label: 'Folders', href: '/folders' }]}>
-        <div />
-      </AppLayout>
+      <AppLayout>{children}</AppLayout>
     </RequireDemoSession>
   )
 }

@@ -40,7 +40,7 @@ export default function SidebarNavMain() {
                   'h-9 rounded-lg gap-2.5 font-medium text-[13px] transition-colors duration-150 relative',
                   isActive
                     ? 'bg-zinc-100 text-zinc-950 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:bg-brand before:rounded-full'
-                    : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
+                    : 'text-zinc-600 hover:bg-brand-50/70 hover:text-zinc-950',
                 )}
               >
                 <Link href={item.href}>

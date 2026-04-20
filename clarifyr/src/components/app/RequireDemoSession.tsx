@@ -6,14 +6,14 @@ import { getDemoSession } from '@/lib/demo-session'
 
 export default function RequireDemoSession({ children }: Readonly<{ children: React.ReactNode }>) {
   const router = useRouter()
-  // Keep server + first client render deterministic (avoid localStorage during render).
-  const [ok, setOk] = useState(false)
+  // Keep render deterministic; just redirect after mount if missing session.
+  const [checked, setChecked] = useState(false)
 
   useEffect(() => {
     const id = globalThis.window?.setTimeout(() => {
       const hasSession = Boolean(getDemoSession())
       if (!hasSession) router.replace('/')
-      setOk(hasSession)
+      setChecked(true)
     }, 0)
 
     return () => {
@@ -21,7 +21,9 @@ export default function RequireDemoSession({ children }: Readonly<{ children: Re
     }
   }, [router])
 
-  if (!ok) return null
+  // Render shell immediately to avoid "blink"; redirect happens post-mount if needed.
+  // For safety, only render children after we've checked once on the client.
+  if (!checked) return null
   return children
 }
 

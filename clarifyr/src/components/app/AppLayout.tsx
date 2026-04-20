@@ -1,15 +1,14 @@
 'use client'
 
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import AppNavbar from './AppNavbar'
-import AppSidebar from './AppSidebar'
+import AppNavbar from '@/components/app/AppNavbar'
+import AppSidebar from '@/components/app/AppSidebar'
 
 interface AppLayoutProps {
   children: React.ReactNode
-  breadcrumbs: { label: string; href?: string }[]
 }
 
-export default function AppLayout({ children, breadcrumbs }: Readonly<AppLayoutProps>) {
+export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
   return (
     <SidebarProvider
       defaultOpen={true}
@@ -24,7 +23,7 @@ export default function AppLayout({ children, breadcrumbs }: Readonly<AppLayoutP
       <AppSidebar />
 
       <SidebarInset className="flex flex-col min-h-screen bg-white">
-        <AppNavbar breadcrumbs={breadcrumbs} />
+        <AppNavbar />
         <main className="flex-1 px-6 py-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
