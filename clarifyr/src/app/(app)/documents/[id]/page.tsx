@@ -1,6 +1,16 @@
-'use client'
+import { notFound } from 'next/navigation'
+import { getDocumentById } from '@/lib/mock/documents'
+import DocumentDetailClient from '@/components/documents/DocumentDetailClient'
 
-export default function DocumentDetailPage() {
-  return <div />
+export default async function DocumentDetailPage({
+  params,
+}: Readonly<{
+  params: Promise<{ id: string }>
+}>) {
+  const { id } = await params
+  const doc = await getDocumentById({ id, simulateMs: 300 })
+  if (!doc) notFound()
+
+  return <DocumentDetailClient doc={doc} />
 }
 

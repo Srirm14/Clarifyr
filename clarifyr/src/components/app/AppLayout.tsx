@@ -24,7 +24,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
 
       <SidebarInset className="flex flex-col min-h-screen bg-white">
         <AppNavbar />
-        <main className="flex-1 px-6 py-6">{children}</main>
+        <main className="flex-1 px-6 py-6 min-h-0 overflow-hidden">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )
