@@ -37,14 +37,21 @@ export default function SidebarNavMain() {
                 isActive={isActive}
                 tooltip={item.label}
                 className={cn(
-                  'h-9 rounded-lg gap-2.5 font-medium text-[13px] transition-colors duration-150 relative',
+                  'h-9 rounded-lg gap-2.5 font-medium text-[13px] transition-colors duration-150 relative ' +
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
                   isActive
                     ? 'bg-zinc-100 text-zinc-950 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:bg-brand before:rounded-full'
-                    : 'text-zinc-600 hover:bg-brand-50/70 hover:text-zinc-950',
+                    : 'text-zinc-600 hover:bg-brand-50/70 hover:text-zinc-950 focus-visible:bg-brand-50/80 focus-visible:text-zinc-950',
                 )}
               >
                 <Link href={item.href}>
-                  <Icon size={16} className={isActive ? 'text-zinc-950' : 'text-zinc-500'} />
+                  <Icon
+                    size={16}
+                    className={cn(
+                      isActive ? 'text-zinc-950' : 'text-zinc-500',
+                      'group-focus-visible/menu-button:text-brand',
+                    )}
+                  />
                   <span>{item.label}</span>
                 </Link>
               </SidebarMenuButton>

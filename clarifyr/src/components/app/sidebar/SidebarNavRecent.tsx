@@ -35,7 +35,11 @@ export default function SidebarNavRecent() {
                 <SidebarMenuItem key={doc.label}>
                   <SidebarMenuButton
                     asChild
-                    className="h-8 rounded-md gap-2 text-[13px] text-zinc-500 hover:bg-brand-50/70 hover:text-zinc-900 transition-colors"
+                    className="h-8 rounded-md gap-2 text-[13px] text-zinc-500 transition-colors
+                               hover:bg-brand-50/70 hover:text-zinc-900
+                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30
+                               focus-visible:ring-offset-2 focus-visible:ring-offset-white
+                               focus-visible:bg-brand-50/80 focus-visible:text-zinc-900"
                   >
                     <Link href={doc.href}>
                       <FileText size={14} className="flex-shrink-0 text-zinc-400" />
