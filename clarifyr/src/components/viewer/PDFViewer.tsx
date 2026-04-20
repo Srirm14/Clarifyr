@@ -7,8 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft,
   ChevronRight,
-  Hand,
-  Type,
+  Check,
+  Copy,
+  Eye,
+  TextQuote,
   ZoomIn,
   ZoomOut,
   FileWarning,
@@ -20,8 +22,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import DocSensePanel from '@/components/viewer/DocSensePanel'
 import type { DocMeta } from '@/components/viewer/viewer.types'
 import { cn } from '@/lib/utils'
-import type { TextLayerImages } from 'pdfjs-dist/types/web/text_layer_builder'
-import { TextLayerBuilder } from 'pdfjs-dist/web/pdf_viewer.mjs'
 
 GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
 
@@ -108,25 +108,20 @@ function PdfPage({
   pdf,
   pageNumber,
   width,
-  enableTextSelection,
 }: Readonly<{
   pdf: PDFDocumentProxy
   pageNumber: number
   width: number
-  enableTextSelection: boolean
 }>) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const textLayerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     let cancelled = false
     const canvasEl = canvasRef.current
-    const textLayerEl = textLayerRef.current
-    if (!canvasEl || !textLayerEl) return
+    if (!canvasEl) return
     let renderTask: RenderTask | null = null
-    let textLayerBuilder: TextLayerBuilder | null = null
 
-    async function run(canvas: HTMLCanvasElement, textLayer: HTMLDivElement) {
+    async function run(canvas: HTMLCanvasElement) {
       const page: PDFPageProxy = await pdf.getPage(pageNumber)
       if (cancelled) return
 
@@ -147,35 +142,295 @@ function PdfPage({
       // Render raster layer
       renderTask = page.render({ canvasContext: ctx, viewport, canvas })
       await renderTask.promise
-
-      // Render text layer (for selection) when enabled
-      textLayer.innerHTML = ''
-      textLayer.style.width = `${Math.floor(viewport.width)}px`
-      textLayer.style.height = `${Math.floor(viewport.height)}px`
-      if (!enableTextSelection) return
-
-      textLayerBuilder = new TextLayerBuilder({ pdfPage: page })
-      // Use the builder's own div for consistent selection behavior.
-      textLayer.appendChild(textLayerBuilder.div)
-      const images = null as unknown as TextLayerImages
-      await textLayerBuilder.render({ viewport, images })
     }
 
-    run(canvasEl, textLayerEl)
+    run(canvasEl)
     return () => {
       cancelled = true
       renderTask?.cancel()
-      textLayerBuilder?.cancel()
     }
-  }, [pdf, pageNumber, width, enableTextSelection])
+  }, [pdf, pageNumber, width])
 
   return (
     <div className="relative">
       <canvas ref={canvasRef} className="block" />
-      <div
-        ref={textLayerRef}
-        className={cn('pdf-textLayer', enableTextSelection ? 'pointer-events-auto' : 'pointer-events-none')}
-      />
+    </div>
+  )
+}
+
+type ParsedTextPiece = {
+  str: string
+  x: number
+  y: number
+  h: number
+  w: number
+  hasEOL: boolean
+}
+
+function median(nums: number[]): number {
+  if (nums.length === 0) return 0
+  const s = [...nums].sort((a, b) => a - b)
+  const mid = Math.floor(s.length / 2)
+  if (s.length % 2 === 1) {
+    const v = s.at(mid)
+    return typeof v === 'number' ? v : 0
+  }
+  const a = s.at(mid - 1)
+  const b = s.at(mid)
+  if (typeof a === 'number' && typeof b === 'number') return (a + b) / 2
+  return 0
+}
+
+function parseTextPieces(items: unknown[]): { pieces: ParsedTextPiece[]; heights: number[] } {
+  const pieces: ParsedTextPiece[] = []
+  const heights: number[] = []
+
+  for (const raw of items) {
+    if (!raw || typeof raw !== 'object') continue
+    const it = raw as {
+      str?: string
+      transform?: number[]
+      height?: number
+      width?: number
+      hasEOL?: boolean
+    }
+    if (typeof it.str !== 'string' || !it.str.length) continue
+    const t = it.transform
+    if (!Array.isArray(t) || t.length < 6) continue
+    const x = Number(t[4])
+    const y = Number(t[5])
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue
+    const h = typeof it.height === 'number' && Number.isFinite(it.height) ? it.height : Math.abs(Number(t[3])) || 12
+    const w = typeof it.width === 'number' && Number.isFinite(it.width) ? it.width : 0
+    heights.push(h)
+    pieces.push({
+      str: it.str,
+      x,
+      y,
+      h,
+      w,
+      hasEOL: it.hasEOL === true,
+    })
+  }
+
+  return { pieces, heights }
+}
+
+function clusterIntoLines(sortedPieces: ParsedTextPiece[], lineTol: number): { y: number; parts: ParsedTextPiece[] }[] {
+  const lines: { y: number; parts: ParsedTextPiece[] }[] = []
+  for (const p of sortedPieces) {
+    const last = lines.at(-1)
+    const sameLine = last !== undefined && Math.abs(p.y - last.y) <= lineTol
+    if (last === undefined || !sameLine) {
+      lines.push({ y: p.y, parts: [p] })
+      continue
+    }
+    last.parts.push(p)
+  }
+  return lines
+}
+
+function appendPieceToLine(s: string, prev: ParsedTextPiece | undefined, cur: ParsedTextPiece): string {
+  const piece = cur.str
+  if (s.length === 0) return piece
+
+  const prevEndX =
+    prev === undefined ? cur.x : prev.x + (prev.w > 0 ? prev.w : prev.str.length * prev.h * 0.5)
+  const gap = cur.x - prevEndX
+  const needsSpace =
+    !/\s$/.test(s) &&
+    !/^\s/.test(piece) &&
+    (gap > cur.h * 0.15 || /^[\wÀ-ÿ]/u.test(piece))
+  return s + (needsSpace ? ' ' : '') + piece
+}
+
+function joinLineParts(parts: ParsedTextPiece[]): string {
+  let s = ''
+  for (let i = 0; i < parts.length; i++) {
+    const cur = parts[i]
+    if (cur === undefined) continue
+    const prev = i > 0 ? parts[i - 1] : undefined
+    s = appendPieceToLine(s, prev, cur)
+    if (cur.hasEOL) s += '\n'
+  }
+  return s.trimEnd()
+}
+
+function mergeLineIntoParagraphs(paragraphs: string[], gap: number, paragraphGap: number, lineStr: string) {
+  if (paragraphs.length === 0 || gap > paragraphGap) {
+    paragraphs.push(lineStr)
+    return
+  }
+  const lastIdx = paragraphs.length - 1
+  const prevPara = paragraphs[lastIdx]
+  if (prevPara === undefined) {
+    paragraphs.push(lineStr)
+    return
+  }
+  paragraphs[lastIdx] = `${prevPara} ${lineStr}`
+}
+
+function linesToParagraphs(
+  lines: { y: number; parts: ParsedTextPiece[] }[],
+  lineStrings: string[],
+  paragraphGap: number,
+): string[] {
+  const paragraphs: string[] = []
+  for (let i = 0; i < lines.length; i++) {
+    const lineMeta = lines[i]
+    const lineStrRaw = lineStrings[i]
+    if (lineMeta === undefined || lineStrRaw === undefined) continue
+    const curY = lineMeta.y
+    const prevMeta = i > 0 ? lines[i - 1] : undefined
+    const prevY = prevMeta === undefined ? curY : prevMeta.y
+    const gap = prevY - curY
+    const lineStr = lineStrRaw.trim()
+    if (lineStr.length === 0) continue
+    mergeLineIntoParagraphs(paragraphs, gap, paragraphGap, lineStr)
+  }
+  return paragraphs
+}
+
+function hash32(input: string): string {
+  let h = 2166136261
+  for (const codePoint of input) {
+    h ^= codePoint.codePointAt(0) ?? 0
+    h = Math.imul(h, 16777619)
+  }
+  return (h >>> 0).toString(16)
+}
+
+/** Layout-aware plain text: group pdf.js items into lines using transform matrix, then paragraphs using vertical gaps. */
+function textContentToFormattedPlain(items: unknown[]): string {
+  const { pieces, heights } = parseTextPieces(items)
+  if (pieces.length === 0) return ''
+
+  const approxLine = median(heights) || 12
+  const lineTol = Math.max(2, approxLine * 0.35)
+  const paragraphGap = Math.max(approxLine * 1.25, 14)
+
+  const sorted = [...pieces].sort((a, b) => {
+    const dy = b.y - a.y
+    if (Math.abs(dy) > lineTol) return dy
+    return a.x - b.x
+  })
+
+  const lines = clusterIntoLines(sorted, lineTol)
+  for (const line of lines) {
+    line.parts.sort((a, b) => a.x - b.x)
+  }
+
+  const lineStrings = lines.map(({ parts }) => joinLineParts(parts))
+  const paragraphs = linesToParagraphs(lines, lineStrings, paragraphGap)
+
+  return paragraphs
+    .map(p => p.replaceAll(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n\n')
+    .trim()
+}
+
+function PageStringsView({
+  pdf,
+  pageNumber,
+}: Readonly<{
+  pdf: PDFDocumentProxy
+  pageNumber: number
+}>) {
+  const [text, setText] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    void Promise.resolve()
+      .then(() => {
+        if (cancelled) return
+        setLoading(true)
+        setError(null)
+        setText('')
+      })
+      .then(() =>
+        pdf.getPage(pageNumber).then(page =>
+          page.getTextContent({
+            includeMarkedContent: false,
+            disableNormalization: false,
+          }),
+        ),
+      )
+      .then(content => {
+        if (cancelled) return
+        setText(textContentToFormattedPlain(content.items as unknown[]))
+      })
+      .catch(() => {
+        if (!cancelled) setError('Could not extract text for this page.')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [pdf, pageNumber])
+
+  useEffect(() => {
+    if (!copied) return
+    const id = globalThis.setTimeout(() => setCopied(false), 1600)
+    return () => globalThis.clearTimeout(id)
+  }, [copied])
+
+  const onCopy = async () => {
+    if (!text) return
+    try {
+      await globalThis.navigator.clipboard.writeText(text)
+      setCopied(true)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-zinc-100 flex-shrink-0">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400 tabular-nums">
+          Strings · Page {pageNumber}
+        </p>
+        <IconButton
+          label={copied ? 'Copied' : 'Copy page text'}
+          disabled={!text || loading}
+          onClick={() => void onCopy()}
+        >
+          {copied ? <Check size={15} className="text-emerald-600" /> : <Copy size={15} />}
+        </IconButton>
+      </div>
+      <ScrollArea className="flex-1 min-h-0 px-4 py-3">
+        {loading ? (
+          <div className="space-y-2">
+            <div className="h-3 w-2/3 rounded bg-zinc-100 animate-pulse" />
+            <div className="h-3 w-full rounded bg-zinc-100 animate-pulse" />
+            <div className="h-3 w-5/6 rounded bg-zinc-100 animate-pulse" />
+          </div>
+        ) : error ? (
+          <p className="text-[12px] text-zinc-600">{error}</p>
+        ) : text ? (
+          <article
+            className="select-text max-w-none text-[12px] sm:text-[13px] leading-[1.62] text-zinc-700 font-normal tracking-normal antialiased"
+            style={{ fontFeatureSettings: '"kern" 1, "liga" 1' }}
+          >
+            {text.split('\n\n').map(para => (
+              <p
+                key={`${pageNumber}-${hash32(para)}-${para.length}`}
+                className="mb-3 last:mb-0 text-left"
+              >
+                {para}
+              </p>
+            ))}
+          </article>
+        ) : (
+          <p className="text-[12px] text-zinc-500">No extractable text on this page (may be image-only).</p>
+        )}
+      </ScrollArea>
     </div>
   )
 }
@@ -382,7 +637,7 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
   const [showPanel, setShowPanel] = useState(true)
   const [thumbsReady, setThumbsReady] = useState(false)
   const [flashPage, setFlashPage] = useState<number | null>(null)
-  const [mode, setMode] = useState<'pan' | 'select'>('pan')
+  const [mode, setMode] = useState<'preview' | 'strings'>('preview')
   const panningRef = useRef(false)
   const panStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 })
   const stageRef = useRef<HTMLDivElement | null>(null)
@@ -437,7 +692,10 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
   // Base page width fills available canvas width (minus 96px padding), max 780px
   const baseWidth = Math.min(Math.max(400, canvasWidth - 96), 780)
   const renderWidth = Math.round(baseWidth * zoom)
-  const renderHeight = Math.round(baseWidth * A4_RATIO * zoom)
+  const cardWidth = useMemo(
+    () => (mode === 'strings' ? Math.min(920, Math.max(renderWidth, 640)) : renderWidth),
+    [mode, renderWidth],
+  )
   const pageSkelHeight = Math.round(baseWidth * A4_RATIO) // A4 aspect at base width
 
   // pdf load handled by effect above
@@ -463,8 +721,8 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
     const vp = refreshViewportRef()
     if (!vp) return
 
-    // Cursor hints per mode (kept calm; grab only in pan mode)
-    vp.style.cursor = mode === 'pan' ? 'grab' : ''
+    // Preview: drag to pan (grab). Strings: extracted text view (default cursor).
+    vp.style.cursor = mode === 'preview' ? 'grab' : ''
 
     const onWindowMove = (e: MouseEvent) => {
       if (!panningRef.current) return
@@ -481,14 +739,14 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
       panningRef.current = false
       const viewport = viewportRef.current
       if (!viewport) return
-      viewport.style.cursor = mode === 'pan' ? 'grab' : ''
+      viewport.style.cursor = mode === 'preview' ? 'grab' : ''
       viewport.style.userSelect = ''
       globalThis.removeEventListener('mousemove', onWindowMove)
       globalThis.removeEventListener('mouseup', onWindowUp)
     }
 
     const onDown = (e: MouseEvent) => {
-      if (mode !== 'pan') return
+      if (mode !== 'preview') return
       if (e.button !== 0) return
       e.preventDefault()
 
@@ -628,26 +886,25 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                   <div
                     className={cn(
                       'py-6 px-8',
-                      renderWidth <= canvasWidth - 96 ? 'flex justify-center' : 'flex justify-start',
+                      cardWidth <= canvasWidth - 96 ? 'flex justify-center' : 'flex justify-start',
                     )}
                   >
                     <motion.div
-                      key={`${safePage}-${zoomIdx}`}
+                      key={`${safePage}-${zoomIdx}-${mode}`}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-                      style={{ width: renderWidth, height: renderHeight }}
+                      style={{ width: cardWidth }}
                       className="rounded-[28px] p-px flex-shrink-0
                                  bg-[linear-gradient(135deg,rgba(251,146,60,0.22)_0%,rgba(232,93,4,0.12)_22%,rgba(0,0,0,0.06)_60%,rgba(0,0,0,0.00)_100%)]
                                  shadow-[0_18px_60px_rgba(0,0,0,0.08)]"
                     >
                       <div className="rounded-[27px] workspace-surface overflow-hidden w-full h-full">
-                        <PdfPage
-                          pdf={pdf}
-                          pageNumber={safePage}
-                          width={renderWidth}
-                          enableTextSelection={mode === 'select'}
-                        />
+                        {mode === 'strings' ? (
+                          <PageStringsView pdf={pdf} pageNumber={safePage} />
+                        ) : (
+                          <PdfPage pdf={pdf} pageNumber={safePage} width={renderWidth} />
+                        )}
                       </div>
                     </motion.div>
                   </div>
@@ -697,14 +954,36 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
               {doc.name}
             </span>
 
-            {/* Interaction mode */}
-            <div className="flex items-center gap-0.5 flex-shrink-0">
-              <IconButton
-                label={mode === 'pan' ? 'Pan mode (drag)' : 'Select text'}
-                onClick={() => setMode(m => (m === 'pan' ? 'select' : 'pan'))}
+            {/* Preview (pan) vs Strings (extracted plain text) */}
+            <div className="flex items-center rounded-lg border border-zinc-200/80 bg-zinc-50/80 p-0.5 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setMode('preview')}
+                aria-pressed={mode === 'preview'}
+                className={cn(
+                  'h-8 px-2.5 rounded-md inline-flex items-center gap-1.5 text-[12px] font-semibold transition-colors',
+                  mode === 'preview'
+                    ? 'bg-white text-zinc-900 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-brand/15'
+                    : 'text-zinc-500 hover:text-zinc-800',
+                )}
               >
-                {mode === 'pan' ? <Hand size={15} /> : <Type size={15} />}
-              </IconButton>
+                <Eye size={14} className={mode === 'preview' ? 'text-brand' : 'text-zinc-400'} />
+                Preview
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('strings')}
+                aria-pressed={mode === 'strings'}
+                className={cn(
+                  'h-8 px-2.5 rounded-md inline-flex items-center gap-1.5 text-[12px] font-semibold transition-colors',
+                  mode === 'strings'
+                    ? 'bg-white text-zinc-900 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-brand/15'
+                    : 'text-zinc-500 hover:text-zinc-800',
+                )}
+              >
+                <TextQuote size={14} className={mode === 'strings' ? 'text-brand' : 'text-zinc-400'} />
+                Strings
+              </button>
             </div>
 
             {/* Zoom + panel toggle */}
