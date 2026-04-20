@@ -40,12 +40,12 @@ const config: Config = {
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
   			brand: {
-  				'50': '#EFF6FF',
-  				'100': '#DBEAFE',
-  				'200': '#BFDBFE',
-  				DEFAULT: '#2563EB',
-  				dark: '#1D4ED8',
-  				light: '#60A5FA'
+  				'50': '#FFF7ED',
+  				'100': '#FFEDD5',
+  				'200': '#FED7AA',
+  				DEFAULT: '#E85D04',
+  				dark: '#C2410C',
+  				light: '#FB923C'
   			},
   			risk: {
   				critical: '#EF4444',
@@ -169,8 +169,8 @@ const config: Config = {
   		boxShadow: {
   			card: '0 1px 3px 0 rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.06)',
   			'card-hover': '0 4px 12px 0 rgba(0,0,0,0.10), 0 2px 4px -1px rgba(0,0,0,0.06)',
-  			orange: '0 4px 14px 0 rgba(37,99,235,0.28)',
-  			'orange-lg': '0 8px 24px 0 rgba(37,99,235,0.22)',
+  			orange: '0 4px 14px 0 rgba(232,93,4,0.28)',
+  			'orange-lg': '0 8px 24px 0 rgba(232,93,4,0.22)',
   			modal: '0 20px 60px -10px rgba(0,0,0,0.18)',
   			input: '0 1px 2px 0 rgba(0,0,0,0.05)'
   		},

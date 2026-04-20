@@ -13,7 +13,7 @@
     --card-foreground:      240 10% 3.9%;
     --popover:              0 0% 100%;
     --popover-foreground:   240 10% 3.9%;
-    --primary:              221 83% 53%;   /* #2563EB brand blue */
+    --primary:              24 96% 46%;    /* #E85D04 brand */
     --primary-foreground:   0 0% 100%;
     --secondary:            240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -25,17 +25,17 @@
     --destructive-foreground: 0 0% 98%;
     --border:               240 5.9% 90%;
     --input:                240 5.9% 90%;
-    --ring:                 221 83% 53%;   /* brand blue focus ring */
+    --ring:                 24 96% 46%;    /* brand focus ring */
     --radius:               0.5rem;
     /* App shell (Sidebar) — keep aligned with landing tokens (white + brand blue) */
     --sidebar-background:           0 0% 100%;
     --sidebar-foreground:           240 10% 3.9%;
-    --sidebar-primary:              221 83% 53%;   /* brand blue */
+    --sidebar-primary:              24 96% 46%;    /* brand */
     --sidebar-primary-foreground:   0 0% 100%;
     --sidebar-accent:               240 4.8% 95.9%;
     --sidebar-accent-foreground:    240 5.9% 10%;
     --sidebar-border:               240 5.9% 90%;
-    --sidebar-ring:                 221 83% 53%;   /* brand blue */
+    --sidebar-ring:                 24 96% 46%;    /* brand */
   }
 
   * {
@@ -54,13 +54,13 @@
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
-  /* Brand blue text selection */
+  /* Brand text selection */
   ::selection {
-    background-color: #DBEAFE;
-    color: #1D4ED8;
+    background-color: #FFEDD5;
+    color: #C2410C;
   }
 
-  /* Smooth focus outlines — brand blue */
+  /* Smooth focus outlines — brand */
   :focus-visible {
     @apply outline-none ring-2 ring-brand ring-offset-2;
   }
@@ -111,7 +111,7 @@
 
   /* ── Button variants ──────────────────────────────────────── */
 
-  /* Primary — blue gradient fill */
+  /* Primary — brand gradient fill */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2
            text-white font-medium text-label
@@ -120,10 +120,10 @@
            active:scale-[0.98]
            transition-all duration-150 cursor-pointer
            disabled:opacity-50 disabled:cursor-not-allowed;
-    background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    background-image: linear-gradient(135deg, #FB923C 0%, #E85D04 100%);
   }
   .btn-primary:hover {
-    background-image: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    background-image: linear-gradient(135deg, #E85D04 0%, #C2410C 100%);
   }
 
   /* Primary large — for hero + final CTA sections */
@@ -134,10 +134,10 @@
            shadow-orange-lg
            active:scale-[0.98]
            transition-all duration-150 cursor-pointer;
-    background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    background-image: linear-gradient(135deg, #FB923C 0%, #E85D04 100%);
   }
   .btn-primary-lg:hover {
-    background-image: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    background-image: linear-gradient(135deg, #E85D04 0%, #C2410C 100%);
   }
 
   /* Secondary — white outlined */
@@ -209,9 +209,9 @@
   .text-balance   { text-wrap: balance;  }
   .text-pretty    { text-wrap: pretty;   }
 
-  /* Blue gradient text — for stat numbers, hero accents */
+  /* Brand gradient text — for stat numbers, hero accents */
   .text-gradient-brand {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    background-image: linear-gradient(135deg, #FB923C 0%, #E85D04 100%);
   }
 }
