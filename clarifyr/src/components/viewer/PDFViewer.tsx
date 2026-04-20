@@ -56,13 +56,26 @@ function AnalyzeBookmark({
         }}
         aria-label="Open DocSense panel"
       >
-        {/* Border layer */}
+        {/* Border layer (outlined by default) */}
         <div
           aria-hidden
-          className="absolute inset-0 bg-brand/35"
+          className="absolute inset-0 bg-brand/40"
           style={{
             clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
           }}
+        />
+
+        {/* Outline fill (default state) */}
+        <motion.div
+          aria-hidden
+          className="absolute inset-px backdrop-blur-sm"
+          style={{
+            clipPath: 'polygon(12px 0%, 100% 0%, 100% 100%, 12px 100%, 0% 50%)',
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.78))',
+          }}
+          animate={{ opacity: hover ? 0 : 1 }}
+          transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
         />
 
         {/* Ambient hover bloom (very soft, controlled) */}
@@ -95,6 +108,7 @@ function AnalyzeBookmark({
           }}
           animate={{
             backgroundPosition: hover ? ['18% 50%, 0% 0%, 0% 0%', '82% 50%, 0% 0%, 0% 0%'] : '18% 50%, 0% 0%, 0% 0%',
+            opacity: hover ? 1 : 0,
           }}
           transition={
             hover
@@ -125,7 +139,7 @@ function AnalyzeBookmark({
               'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 40%, transparent 78%)',
             filter: 'blur(0.2px)',
           }}
-          animate={{ x: hover ? [0, 10, 0] : 0, opacity: hover ? 0.55 : 0.4 }}
+          animate={{ x: hover ? [0, 10, 0] : 0, opacity: hover ? 0.55 : 0 }}
           transition={
             hover
               ? { duration: 2.8, ease: [0.25, 0.1, 0.25, 1], repeat: Infinity, repeatType: 'mirror' }
@@ -217,7 +231,7 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
   const [numPages, setNumPages] = useState(0)
   const [page, setPage] = useState(1)
   const [zoomIdx, setZoomIdx] = useState(2) // default 1.0×
-  const [showPanel, setShowPanel] = useState(false)
+  const [showPanel, setShowPanel] = useState(true)
   const [thumbsReady, setThumbsReady] = useState(false)
   const [flashPage, setFlashPage] = useState<number | null>(null)
 
@@ -363,13 +377,17 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
 
         {/* ── Main canvas ──────────────────────────────────────────── */}
         <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-          <div ref={canvasRef} className="relative flex-1 min-h-0 overflow-hidden workspace-canvas">
+          <div
+            ref={canvasRef}
+            className="relative flex-1 min-h-0 overflow-hidden workspace-canvas bg-brand-50/15"
+          >
             {/* Bookmark-style Analyze toggle */}
             <AnimatePresence mode="wait">
               {showPanel ? null : <AnalyzeBookmark onClick={() => setShowPanel(true)} />}
             </AnimatePresence>
             {/* Inner shadow makes it feel like paper in a tray */}
-            <div className="absolute inset-0 pointer-events-none shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-10px_24px_rgba(0,0,0,0.08)]" />
+            <div className="absolute inset-0 pointer-events-none
+                            shadow-[inset_0_1px_0_rgba(255,255,255,0.7),inset_0_-10px_24px_rgba(0,0,0,0.08)]" />
 
             <ScrollArea className="h-full relative">
               <div className="py-6 flex justify-center">
@@ -386,15 +404,19 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                       animate={{ scale: zoom }}
                       transition={{ type: 'spring', stiffness: 220, damping: 26 }}
                       style={{ transformOrigin: 'top center' }}
-                      className="workspace-surface rounded-3xl overflow-hidden shadow-[0_18px_60px_rgba(0,0,0,0.08)]"
+                      className="rounded-[28px] p-px
+                                 bg-[linear-gradient(135deg,rgba(251,146,60,0.22)_0%,rgba(232,93,4,0.12)_22%,rgba(0,0,0,0.06)_60%,rgba(0,0,0,0.00)_100%)]
+                                 shadow-[0_18px_60px_rgba(0,0,0,0.08)]"
                     >
-                      <Page
-                        pageNumber={safePage}
-                        width={baseWidth}
-                        renderAnnotationLayer={false}
-                        renderTextLayer={false}
-                        loading={<PageSkeleton width={baseWidth} height={Math.round(baseWidth * 1.414)} />}
-                      />
+                      <div className="rounded-[27px] workspace-surface overflow-hidden">
+                        <Page
+                          pageNumber={safePage}
+                          width={baseWidth}
+                          renderAnnotationLayer={false}
+                          renderTextLayer={false}
+                          loading={<PageSkeleton width={baseWidth} height={Math.round(baseWidth * 1.414)} />}
+                        />
+                      </div>
                     </motion.div>
                   </Document>
                 ) : (

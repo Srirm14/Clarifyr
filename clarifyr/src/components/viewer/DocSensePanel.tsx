@@ -190,7 +190,7 @@ export default function DocSensePanel({
         {/* Content */}
         <div className="flex-1 min-h-0">
           <Tabs value={tab} onValueChange={v => setTab(v as 'report' | 'chat')} className="h-full">
-            <TabsContent value="report" className="mt-0 h-full overflow-y-auto">
+            <TabsContent value="report" className="mt-0 h-full overflow-y-auto scrollbar-brand">
               {reportReady ? (
                 <DocSenseReport doc={doc} onJumpToPage={onJumpToPage} />
               ) : (

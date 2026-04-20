@@ -257,6 +257,29 @@
   .text-balance   { text-wrap: balance;  }
   .text-pretty    { text-wrap: pretty;   }
 
+  /* Subtle brand-tinted native scrollbars (fallback) */
+  .scrollbar-brand {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(232, 93, 4, 0.28) transparent;
+  }
+  .scrollbar-brand::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .scrollbar-brand::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-brand::-webkit-scrollbar-thumb {
+    background-color: rgba(161, 161, 170, 0.55); /* zinc-400-ish */
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+    transition: background-color 160ms ease;
+  }
+  .scrollbar-brand:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(232, 93, 4, 0.32);
+  }
+
   /* Brand gradient text — for stat numbers, hero accents */
   .text-gradient-brand {
     @apply bg-clip-text text-transparent;
