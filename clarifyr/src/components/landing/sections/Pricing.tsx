@@ -9,7 +9,7 @@ import SectionHeading from '@/components/landing/SectionHeading'
 import type { CTAProps } from '@/types/landing'
 import AmbientBackground from '@/components/landing/AmbientBackground'
 
-export default function Pricing({ onCTAClick }: CTAProps) {
+export default function Pricing({ onCTAClick }: Readonly<CTAProps>) {
   return (
     <section id="pricing" className="relative bg-white section-pad overflow-hidden">
       <AmbientBackground preset="section" />
@@ -18,7 +18,7 @@ export default function Pricing({ onCTAClick }: CTAProps) {
           <SectionHeading
             eyebrow="PRICING"
             heading="Transparent Pricing"
-            sub="Simple plans for individuals and teams. Start free, upgrade when you need more."
+            sub="Simple plans for individuals and teams. Start free, upgrade when you need."
           />
         </motion.div>
 

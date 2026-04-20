@@ -128,9 +128,9 @@ export default function Hero({ onCTAClick }: Readonly<CTAProps>) {
             transition={{ duration: 0.65, delay: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
             className="w-full max-w-[860px] mx-auto mt-16 relative"
           >
-            {/* Soft blue base glow behind mock */}
+            {/* Soft base glow behind mock */}
             <div className="pointer-events-none absolute -bottom-6 left-1/2 -translate-x-1/2 w-[72%] h-12
-                            bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.18)_0%,transparent_70%)]
+                            bg-[radial-gradient(ellipse_at_center,rgba(251,146,60,0.10)_0%,transparent_70%)]
                             blur-2xl rounded-full -z-10" />
             <HeroReportMock />
           </motion.div>

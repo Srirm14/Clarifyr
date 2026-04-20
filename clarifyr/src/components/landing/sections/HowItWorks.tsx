@@ -27,7 +27,7 @@ const stepsContainer = {
   visible: { transition: { staggerChildren: 0.15, delayChildren: 0.1 } },
 }
 
-export default function HowItWorks({ onCTAClick }: CTAProps) {
+export default function HowItWorks({ onCTAClick }: Readonly<CTAProps>) {
   return (
     <section id="how-it-works" className="relative bg-white section-pad overflow-hidden">
       <AmbientBackground preset="section" />
@@ -36,6 +36,7 @@ export default function HowItWorks({ onCTAClick }: CTAProps) {
           <SectionHeading
             eyebrow="HOW IT WORKS"
             heading="Clarity from chaos — in three steps."
+            sub="Upload your contract, get risks flagged, and understand everything in plain English."
           />
         </motion.div>
 

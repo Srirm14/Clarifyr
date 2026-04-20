@@ -46,7 +46,7 @@ export default function AnimatedHeadline({ segments }: Readonly<{ segments: Head
               variants={char}
               className={
                 item.b
-                  ? 'bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 bg-clip-text text-transparent'
+                  ? 'text-gradient-brand'
                   : 'text-zinc-950'
               }
               style={{ display: 'inline', whiteSpace: 'pre' }}

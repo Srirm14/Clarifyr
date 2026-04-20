@@ -5,7 +5,7 @@ import { staggerContainer, staggerItem, viewport } from '@/lib/motion'
 import type { CTAProps } from '@/types/landing'
 import AmbientBackground from '@/components/landing/AmbientBackground'
 
-export default function FinalCTA({ onCTAClick }: CTAProps) {
+export default function FinalCTA({ onCTAClick }: Readonly<CTAProps>) {
   return (
     <section
       id="final-cta"
@@ -14,7 +14,7 @@ export default function FinalCTA({ onCTAClick }: CTAProps) {
       {/* Light, premium abstract lighting */}
       <AmbientBackground preset="sectionAlt" className="!inset-0" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-200 to-transparent opacity-70" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.08)_0%,transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(251,146,60,0.04)_0%,transparent_55%)]" />
 
       <div className="relative max-w-container mx-auto px-4 sm:px-6">
         <motion.div

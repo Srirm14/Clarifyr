@@ -24,7 +24,7 @@ export default function Problem() {
           <SectionHeading
             eyebrow="THE PROBLEM"
             heading="Signing blind is the default."
-            sub="Most people either skip reading contracts or can't understand them. Both are costly."
+            sub="Most people either skip reading contracts or can’t understand them. Both are costly."
           />
         </motion.div>
 

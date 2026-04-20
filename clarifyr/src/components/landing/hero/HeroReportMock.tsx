@@ -45,7 +45,7 @@ export default function HeroReportMock() {
         <motion.div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-20
-                     bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.22)_0%,transparent_72%)]"
+                     bg-[radial-gradient(ellipse_at_top,rgba(251,146,60,0.12)_0%,transparent_72%)]"
           animate={{ opacity: [0.5, 0.9, 0.5] }}
           transition={{ duration: 5.8, ease: 'easeInOut', repeat: Infinity }}
         />
@@ -101,7 +101,7 @@ export default function HeroReportMock() {
                 <ShieldCheck size={12} className="text-brand" />
                 <span className="text-[11px] font-semibold text-brand">Negotiation tip</span>
               </div>
-              <p className="text-[11px] text-blue-700 leading-relaxed mt-1">
+              <p className="text-[11px] text-brand-700 leading-relaxed mt-1">
                 Ask to reduce to 12 months and limit to direct competitors only.
               </p>
             </motion.div>
