@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import type { DocFilter, DocumentRow } from '@/lib/mock/documents'
 import { DOC_FILTERS } from '@/lib/mock/documents'
 import { useToast } from '@/hooks/use-toast'
+import { useUploadDialog } from '@/lib/upload/useUploadDialog'
 
 export default function DocumentsTableClient({
   filter,
@@ -25,11 +26,15 @@ export default function DocumentsTableClient({
   totalPages: number
 }>) {
   const { toast } = useToast()
+  const upload = useUploadDialog()
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1
   const to = Math.min(total, page * pageSize)
+  const filterPrefix =
+    filter === 'All' ? '' : `filter=${encodeURIComponent(filter)}&`
 
   return (
     <div className="w-full min-w-0 h-full flex flex-col">
+      {upload.dialog}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h1 className="text-subsection font-semibold text-zinc-950">All Documents</h1>
@@ -38,7 +43,7 @@ export default function DocumentsTableClient({
           </p>
         </div>
 
-        <Button variant="default" className="h-10 px-4">
+        <Button variant="default" className="h-10 px-4" onClick={upload.openDialog}>
           <Upload size={16} />
           Upload document
         </Button>
@@ -177,7 +182,7 @@ export default function DocumentsTableClient({
 
           <div className="flex items-center gap-2">
             <Link
-              href={`/documents?${filter !== 'All' ? `filter=${encodeURIComponent(filter)}&` : ''}page=${Math.max(1, page - 1)}`}
+              href={`/documents?${filterPrefix}page=${Math.max(1, page - 1)}`}
               aria-disabled={page <= 1}
               className={cn(
                 'h-9 px-3 rounded-md border text-[13px] font-medium inline-flex items-center transition-colors',
@@ -192,7 +197,7 @@ export default function DocumentsTableClient({
               Page <span className="text-zinc-900 font-medium">{page}</span> / {totalPages}
             </div>
             <Link
-              href={`/documents?${filter !== 'All' ? `filter=${encodeURIComponent(filter)}&` : ''}page=${Math.min(totalPages, page + 1)}`}
+              href={`/documents?${filterPrefix}page=${Math.min(totalPages, page + 1)}`}
               aria-disabled={page >= totalPages}
               className={cn(
                 'h-9 px-3 rounded-md border text-[13px] font-medium inline-flex items-center transition-colors',

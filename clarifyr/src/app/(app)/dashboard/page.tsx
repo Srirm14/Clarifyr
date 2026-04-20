@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getDashboardStatsSync } from '@/lib/mock/dashboard'
+import { useUploadDialog } from '@/lib/upload/useUploadDialog'
 
 function StatCard({
   label,
@@ -59,9 +60,11 @@ function StatCard({
 
 export default function DashboardPage() {
   const stats = getDashboardStatsSync()
+  const upload = useUploadDialog()
 
   return (
     <div className="w-full min-w-0 h-full flex flex-col">
+      {upload.dialog}
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
@@ -82,7 +85,7 @@ export default function DashboardPage() {
               View documents
             </Link>
           </Button>
-          <Button className="h-10 px-4">
+          <Button className="h-10 px-4" onClick={upload.openDialog}>
             <Upload size={16} />
             Upload document
           </Button>
@@ -199,7 +202,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-4 flex flex-col gap-2">
-            <Button className="w-full justify-center">
+            <Button className="w-full justify-center" onClick={upload.openDialog}>
               <Upload size={16} />
               Upload document
             </Button>
