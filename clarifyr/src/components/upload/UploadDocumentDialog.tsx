@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useId, useMemo, useState } from 'react'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -31,6 +31,7 @@ export default function UploadDocumentDialog({
   const [selectedId, setSelectedId] = useState<string>(() => loadCategories()[0]?.id ?? 'legal')
   const [query, setQuery] = useState('')
   const [newCat, setNewCat] = useState('')
+  const fileInputId = useId()
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -47,8 +48,15 @@ export default function UploadDocumentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[720px] p-0 overflow-hidden rounded-3xl workspace-panel workspace-edge-glow">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-zinc-100">
+      <DialogContent
+        className={cn(
+          'w-[calc(100%-2rem)] gap-0 p-0 overflow-hidden rounded-3xl',
+          'max-w-xl sm:max-w-2xl md:max-w-3xl xl:max-w-4xl',
+          'flex max-h-[min(90dvh,880px)] flex-col',
+          'workspace-panel workspace-edge-glow',
+        )}
+      >
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-zinc-100">
           <div className="flex items-start justify-between gap-4">
             <div>
               <DialogTitle className="text-[15px] font-semibold text-zinc-950">Upload document</DialogTitle>
@@ -72,7 +80,7 @@ export default function UploadDocumentDialog({
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 overflow-y-auto lg:grid-cols-12">
           <div className="lg:col-span-7 px-6 py-5">
             <div className="rounded-3xl bg-white border border-zinc-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-4">
               <div className="flex items-start gap-3">
@@ -87,18 +95,34 @@ export default function UploadDocumentDialog({
                 </div>
               </div>
 
-              <div className="mt-4">
-                <input
-                  type="file"
-                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  onChange={e => setFile(e.target.files?.[0] ?? null)}
-                  className="block w-full text-[13px] text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-[12px] file:font-semibold file:text-brand hover:file:bg-brand-100"
-                />
-                {file && (
-                  <p className="mt-3 text-[12px] text-zinc-600">
-                    Selected: <span className="font-semibold text-zinc-900">{file.name}</span>
+              <div className="mt-4 min-w-0">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                  <input
+                    id={fileInputId}
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={e => setFile(e.target.files?.[0] ?? null)}
+                    className="sr-only"
+                  />
+                  <label
+                    htmlFor={fileInputId}
+                    className={cn(
+                      'inline-flex h-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg',
+                      'bg-brand-50 px-3 text-[12px] font-semibold text-brand transition-colors',
+                      'hover:bg-brand-100',
+                    )}
+                  >
+                    Choose file
+                  </label>
+                  <p
+                    className="min-w-0 flex-1 text-[12px] text-zinc-600 sm:py-0.5"
+                    title={file?.name ?? 'No file chosen'}
+                  >
+                    <span className="block truncate">
+                      {file?.name ?? 'No file chosen'}
+                    </span>
                   </p>
-                )}
+                </div>
               </div>
             </div>
 
@@ -191,32 +215,32 @@ export default function UploadDocumentDialog({
                   </Button>
                 </div>
               </div>
-
-              <div className="mt-5 flex items-center justify-between gap-2">
-                <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (!file || !selected) return
-                    toast({
-                      title: 'Uploaded',
-                      description: `Added “${file.name}” to “${selected.name}” (demo).`,
-                    })
-                    onUploaded?.({ file, category: selected })
-                    onOpenChange(false)
-                  }}
-                  disabled={!canSubmit}
-                  className="min-w-[160px]"
-                >
-                  <Upload size={16} />
-                  Upload
-                </Button>
-              </div>
             </div>
           </div>
         </div>
+
+        <DialogFooter className="flex-shrink-0 gap-3 border-t border-zinc-100 bg-white px-6 py-4 sm:flex-row sm:justify-between">
+          <Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={() => {
+              if (!file || !selected) return
+              toast({
+                title: 'Uploaded',
+                description: `Added “${file.name}” to “${selected.name}” (demo).`,
+              })
+              onUploaded?.({ file, category: selected })
+              onOpenChange(false)
+            }}
+            disabled={!canSubmit}
+            className="w-full min-w-0 sm:w-auto sm:min-w-[160px]"
+          >
+            <Upload size={16} />
+            Upload
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
