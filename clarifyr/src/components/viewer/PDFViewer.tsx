@@ -689,8 +689,11 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
   // Clamp page to valid range — read-time derivation avoids setState-in-effect
   const safePage = Math.min(pageCount, Math.max(1, page))
 
-  // Base page width fills available canvas width (minus 96px padding), max 780px
-  const baseWidth = Math.min(Math.max(400, canvasWidth - 96), 780)
+  // Base width fills the preview column (minus horizontal padding). Avoid a fixed max (~780px)
+  // so ultra-wide layouts don't leave a huge centered gap beside the Pages rail.
+  // Cap only near typical GPU max canvas dimension for very large windows.
+  const MAX_BASE_PAGE_WIDTH = 4096
+  const baseWidth = Math.min(Math.max(400, canvasWidth - 96), MAX_BASE_PAGE_WIDTH)
   const renderWidth = Math.round(baseWidth * zoom)
   const cardWidth = useMemo(
     () => (mode === 'strings' ? Math.min(920, Math.max(renderWidth, 640)) : renderWidth),
@@ -883,12 +886,7 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
                     <PageSkeleton width={baseWidth} height={pageSkelHeight} />
                   )
                 ) : (
-                  <div
-                    className={cn(
-                      'py-6 px-8',
-                      cardWidth <= canvasWidth - 96 ? 'flex justify-center' : 'flex justify-start',
-                    )}
-                  >
+                  <div className="py-6 px-8 flex justify-start min-w-0">
                     <motion.div
                       key={`${safePage}-${zoomIdx}-${mode}`}
                       initial={{ opacity: 0, y: 8 }}
