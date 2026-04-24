@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 
-const STORAGE_KEY = 'clarifyr_display_name'
+export const WORKSPACE_DISPLAY_NAME_STORAGE_KEY = 'clarifyr_display_name' as const
+const STORAGE_KEY = WORKSPACE_DISPLAY_NAME_STORAGE_KEY
 export const WORKSPACE_DISPLAY_NAME_EVENT = 'clarifyr:display-name-updated'
 
 export function getWorkspaceDisplayName(fallback: string): string {
