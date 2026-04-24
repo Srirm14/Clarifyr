@@ -182,11 +182,12 @@
     @apply bg-zinc-100;
   }
 
-  /* Very subtle brand atmosphere behind the PDF stage */
+  /* Very subtle brand atmosphere behind the PDF stage (solid zinc base, then tints) */
   .workspace-warm-wash {
     background:
       radial-gradient(900px 520px at 60% 20%, rgba(251, 146, 60, 0.06), transparent 60%),
-      radial-gradient(820px 560px at 92% 35%, rgba(232, 93, 4, 0.05), transparent 62%);
+      radial-gradient(820px 560px at 92% 35%, rgba(232, 93, 4, 0.05), transparent 62%),
+      #f4f4f5;
   }
 
   /* Primary shell panels (thumbnails rail, right panel) */

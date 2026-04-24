@@ -84,6 +84,9 @@ function PdfThumb({
       canvas.width = Math.floor(viewport.width * dpr)
       canvas.height = Math.floor(viewport.height * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      // Opaque canvas default is black; fill a neutral "paper" base before the PDF layer paints
+      ctx.fillStyle = '#f4f4f5'
+      ctx.fillRect(0, 0, viewport.width, viewport.height)
 
       renderTask = page.render({ canvasContext: ctx, viewport, canvas })
       await renderTask.promise
@@ -99,7 +102,7 @@ function PdfThumb({
   return (
     <canvas
       ref={canvasRef}
-      className={cn('block', active ? 'opacity-100' : 'opacity-95')}
+      className={cn('block min-h-0 bg-zinc-100', active ? 'opacity-100' : 'opacity-95')}
     />
   )
 }
@@ -138,6 +141,8 @@ function PdfPage({
       canvas.width = Math.floor(viewport.width * dpr)
       canvas.height = Math.floor(viewport.height * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.fillStyle = '#f4f4f5'
+      ctx.fillRect(0, 0, viewport.width, viewport.height)
 
       // Render raster layer
       renderTask = page.render({ canvasContext: ctx, viewport, canvas })
@@ -152,8 +157,8 @@ function PdfPage({
   }, [pdf, pageNumber, width])
 
   return (
-    <div className="relative">
-      <canvas ref={canvasRef} className="block" />
+    <div className="relative min-w-0 bg-zinc-100">
+      <canvas ref={canvasRef} className="block min-h-0" />
     </div>
   )
 }
@@ -620,10 +625,14 @@ function ViewerError({ message }: Readonly<{ message: string }>) {
 function PageSkeleton({ width, height }: Readonly<{ width: number; height: number }>) {
   return (
     <div
-      className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.07)] ring-1 ring-zinc-200/80 overflow-hidden"
+      className="overflow-hidden rounded-2xl border border-zinc-200/60 bg-zinc-100/90 shadow-[0_8px_32px_rgba(0,0,0,0.05)] ring-1 ring-zinc-200/50"
       style={{ width, height }}
     >
-      <div className="h-full w-full bg-gradient-to-b from-zinc-50 to-zinc-100/60 animate-pulse" />
+      <div className="h-full w-full bg-gradient-to-b from-zinc-100 via-zinc-100/80 to-zinc-200/40">
+        <div className="flex h-full w-full items-center justify-center p-6">
+          <p className="text-[12px] font-medium text-zinc-400">Loading document…</p>
+        </div>
+      </div>
     </div>
   )
 }
@@ -863,7 +872,7 @@ export default function PDFViewer({ doc }: Readonly<{ doc: DocMeta }>) {
         <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
           <div
             ref={canvasRef}
-            className="relative flex-1 min-h-0 overflow-hidden workspace-canvas bg-brand-50/15"
+            className="relative flex-1 min-h-0 overflow-hidden workspace-canvas workspace-warm-wash"
           >
             {/* Bookmark-style Analyze toggle */}
             <AnimatePresence mode="wait">

@@ -6,6 +6,16 @@ export const WORKSPACE_DISPLAY_NAME_STORAGE_KEY = 'clarifyr_display_name' as con
 const STORAGE_KEY = WORKSPACE_DISPLAY_NAME_STORAGE_KEY
 export const WORKSPACE_DISPLAY_NAME_EVENT = 'clarifyr:display-name-updated'
 
+/** Clears the persisted display name (e.g. on sign out). */
+export function clearWorkspaceDisplayNameStorage() {
+  if (typeof globalThis === 'undefined' || !('localStorage' in globalThis)) return
+  try {
+    globalThis.localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    // ignore
+  }
+}
+
 export function getWorkspaceDisplayName(fallback: string): string {
   if (typeof window === 'undefined') return fallback
   try {
