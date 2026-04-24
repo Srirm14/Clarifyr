@@ -15,7 +15,7 @@ import SidebarNavRecent from '@/components/app/sidebar/SidebarNavRecent'
 export default function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-zinc-200 bg-white">
-      <SidebarHeader className="border-b border-zinc-200 h-14 flex items-center px-2">
+      <SidebarHeader className="h-14 flex items-center border-b border-zinc-200 px-2">
         <div className="w-full flex items-center justify-start mt-1">
           <SidebarLogo />
         </div>

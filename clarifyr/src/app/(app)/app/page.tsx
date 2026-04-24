@@ -1,7 +1,6 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-export default function AppHomePage() {
-  // App shell only — no content yet.
-  return <div />
+/** Legacy /app entry after login; workspace home is the dashboard. */
+export default function AppLegacyRedirect() {
+  redirect('/dashboard')
 }
-

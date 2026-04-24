@@ -2,12 +2,19 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { Settings } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useSidebar } from '@/components/ui/sidebar'
+import { useWorkspaceDisplayName } from '@/hooks/use-workspace-display-name'
 import { SIDEBAR_USER } from '@/lib/constants/sidebar'
+import { cn } from '@/lib/utils'
 
 export default function SidebarFooterUser() {
   const { open } = useSidebar()
+  const pathname = usePathname()
+  const onSettings = pathname === '/settings' || pathname?.startsWith('/settings/')
   const user = SIDEBAR_USER
+  const { displayName, initials } = useWorkspaceDisplayName(user.name)
   const pct = Math.min(100, Math.max(0, (user.usage.used / user.usage.total) * 100))
 
   return (
@@ -36,7 +43,7 @@ export default function SidebarFooterUser() {
 
       <div className={open ? 'flex items-center gap-2.5 px-1' : 'w-full flex items-center justify-center'}>
         <div className="w-[30px] h-[30px] rounded-full bg-zinc-950 flex items-center justify-center flex-shrink-0">
-          <span className="text-[11px] font-semibold text-white">{user.initials}</span>
+          <span className="text-[11px] font-semibold text-white">{initials}</span>
         </div>
 
         <AnimatePresence>
@@ -48,7 +55,7 @@ export default function SidebarFooterUser() {
               transition={{ duration: 0.18 }}
               className="flex-1 min-w-0 overflow-hidden"
             >
-              <p className="text-[13px] font-medium text-zinc-900 truncate">{user.name}</p>
+              <p className="text-[13px] font-medium text-zinc-900 truncate">{displayName}</p>
               <p className="text-[11px] text-zinc-400 truncate flex items-center gap-1">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand" />
                 {user.plan} Plan
@@ -59,17 +66,28 @@ export default function SidebarFooterUser() {
 
         <AnimatePresence>
           {open && (
-            <motion.button
-              type="button"
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors flex-shrink-0"
-              aria-label="Settings"
+              className="flex shrink-0"
             >
-              <Settings size={15} />
-            </motion.button>
+              <Link
+                href="/settings"
+                className={cn(
+                  'rounded-md p-1 transition-colors',
+                  onSettings
+                    ? 'text-brand'
+                    : 'text-zinc-400 hover:bg-brand-50 hover:text-zinc-800',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+                )}
+                aria-label="Open settings"
+                aria-current={onSettings ? 'page' : undefined}
+              >
+                <Settings size={15} className="block" />
+              </Link>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

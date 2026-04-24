@@ -1,4 +1,4 @@
-import { MOCK_DOCS, RECENT_DOC_IDS } from '@/lib/mock/documents'
+import { MOCK_DOCS, RECENT_DOC_IDS, type DocumentRow } from '@/lib/mock/documents'
 
 export function getDashboardStatsSync() {
   const total = MOCK_DOCS.length
@@ -11,7 +11,9 @@ export function getDashboardStatsSync() {
   const analyzed = ready
   const coveragePct = total === 0 ? 0 : Math.round((analyzed / total) * 100)
 
-  const recent = RECENT_DOC_IDS.map(id => MOCK_DOCS.find(d => d.id === id)).filter(Boolean)
+  const recent: DocumentRow[] = RECENT_DOC_IDS.map(id => MOCK_DOCS.find(d => d.id === id)).filter(
+    (d): d is DocumentRow => d != null,
+  )
 
   return {
     total,

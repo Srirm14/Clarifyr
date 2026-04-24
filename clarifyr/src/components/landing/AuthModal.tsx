@@ -82,7 +82,7 @@ export default function AuthModal({ open, onClose }: Readonly<AuthModalProps>) {
     if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
       setDemoSession(email)
       onClose()
-      router.push('/app')
+      router.push('/dashboard')
       return
     }
 
